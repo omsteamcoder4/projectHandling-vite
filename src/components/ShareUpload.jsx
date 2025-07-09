@@ -202,7 +202,6 @@ const ShareUpload = () => {
   }
 
   const deleteUploadedFile = async (fileId) => {
-    if (!project?._id) return
     try {
       await axios.delete(`http://localhost:5000/api/projects/share/${token}/files/${fileId}`)
       fetchProject()
@@ -665,23 +664,30 @@ const ShareUpload = () => {
                 animate={{ opacity: 1, y: 0 }}
                 className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6"
               >
-               
+                {/* Box Header */}
+                <div className="flex justify-between items-center mb-4 pb-4 border-b border-gray-100">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1 flex-1">
+                      <h3 className="font-semibold text-gray-800">{formatDate(sessionData.timestamp)}</h3>
+                    </div>
+                  </div>
+                </div>
 
                 {/* Notes Section */}
-               <div className="mb-4 relative flex items-start group">
+                <div className="mb-4 relative flex items-start group">
                   {editingNotes[sessionKey] ? (
                     <textarea
                       value={tempNotes[sessionKey] || ""}
                       onChange={(e) => setTempNotes((prev) => ({ ...prev, [sessionKey]: e.target.value }))}
                       className="w-full px-0 py-1 text-sm text-gray-700 bg-transparent border-none focus:ring-0 focus:outline-none resize-none"
-                      rows={Math.max(1, Math.min(5, (tempNotes[sessionKey]?.split('\n').length || 1)))}
+                      rows={Math.max(1, Math.min(5, tempNotes[sessionKey]?.split("\n").length || 1))}
                       placeholder="Type your notes here..."
                       autoFocus
                       onBlur={() => saveNotes(sessionKey)}
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault();
-                          saveNotes(sessionKey);
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault()
+                          saveNotes(sessionKey)
                         }
                       }}
                     />
@@ -689,22 +695,12 @@ const ShareUpload = () => {
                     <>
                       <div className="flex items-center gap-1 w-full">
                         <div className="flex items-center gap-1 flex-1">
-                          
-                          <input
-                            type="text"
-                             className="text-sm text-blue-800 italic font-semibold"
-                            value={sessionData.notes}
-                            onChange={(e) => setEditNotes(e.target.value)}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              startEditingNotes(sessionKey, sessionData.notes);
-                            }}
-                          />
+                          <span className="text-sm text-blue-800 italic font-semibold">{sessionData.notes}</span>
                           <button
                             className="text-gray-400 hover:text-indigo-600 transition-colors"
                             onClick={(e) => {
-                              e.stopPropagation();
-                              startEditingNotes(sessionKey, sessionData.notes);
+                              e.stopPropagation()
+                              startEditingNotes(sessionKey, sessionData.notes)
                             }}
                           >
                             <svg
@@ -732,8 +728,6 @@ const ShareUpload = () => {
                           <FiPlus size={16} /> Add More
                         </motion.button>
                       </div>
-
-
                     </>
                   )}
                 </div>

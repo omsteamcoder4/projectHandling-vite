@@ -38,9 +38,9 @@ const ProjectForm = ({ project, onClose, onSuccess }) => {
 
     try {
       if (project) {
-        await axios.put(`http://localhost:5000/api/projects/${project._id}`, formData)
+        await axios.put(`${import.meta.env.VITE_API_BASE_URL}/projects/${project._id}`, formData)
       } else {
-        await axios.post("http://localhost:5000/api/projects", formData)
+        await axios.post(`${import.meta.env.VITE_API_BASE_URL}/projects`, formData)
       }
       onSuccess()
     } catch (error) {

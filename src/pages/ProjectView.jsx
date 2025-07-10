@@ -26,7 +26,7 @@
 
 //   const fetchProject = async () => {
 //     try {
-//       const response = await axios.get(`http://localhost:5000/api/projects/${id}`)
+//       const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/projects/${id}`)
 //       setProject(response.data)
 //     } catch (error) {
 //       setError("Project not found or access denied")
@@ -105,7 +105,7 @@
 //     if (window.confirm(`Are you sure you want to delete ${selectedFiles.length} file(s)?`)) {
 //       try {
 //         for (const fileId of selectedFiles) {
-//           await axios.delete(`http://localhost:5000/api/projects/${id}/files/${fileId}`)
+//           await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/projects/${id}/files/${fileId}`)
 //         }
 //         setSelectedFiles([])
 //         fetchProject()
@@ -120,7 +120,7 @@
 //     if (!newFileName.trim()) return
 
 //     try {
-//       await axios.put(`http://localhost:5000/api/projects/${id}/files/${fileId}`, {
+//       await axios.put(`${import.meta.env.VITE_API_BASE_URL}/projects/${id}/files/${fileId}`, {
 //         displayName: newFileName,
 //       })
 //       setEditingFileName(null)
@@ -138,7 +138,7 @@
 
 //   const downloadFile = async (fileId, fileName) => {
 //     try {
-//       const response = await axios.get(`http://localhost:5000/api/projects/${id}/files/${fileId}/download`, {
+//       const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/projects/${id}/files/${fileId}/download`, {
 //         responseType: "blob",
 //       })
 
@@ -191,7 +191,7 @@
 //     try {
 //       for (const image of selectedImages) {
 //         // Download original image
-//         const response = await axios.get(`http://localhost:5000/api/projects/${id}/files/${image._id}/download`, {
+//         const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/projects/${id}/files/${image._id}/download`, {
 //           responseType: "blob",
 //         })
 

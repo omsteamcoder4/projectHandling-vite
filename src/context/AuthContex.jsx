@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         try {
           axios.defaults.headers.common["Authorization"] = `Bearer ${token}`
-          const response = await axios.get("http://localhost:5000/api/auth/me")
+          const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/auth/me`)
           setUser(response.data)
         } catch (error) {
           localStorage.removeItem("token")
@@ -45,7 +45,9 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (username, password) => {
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/login", {
+      console.log(import.meta.env.VITE_API_BASE_URL);
+      
+      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/auth/login`, {
         username,
         password,
       })
@@ -66,7 +68,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (username, password) => {
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/register", {
+      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/auth/register`, {
         username,
         password,
       })

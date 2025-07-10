@@ -45,7 +45,7 @@ const UserManagement = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/users")
+      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/users`)
       setUsers(response.data)
     } catch (error) {
       console.error("Error fetching users:", error)
@@ -75,13 +75,13 @@ const UserManagement = () => {
         if (formData.password.trim()) {
           updateData.password = formData.password
         }
-        await axios.put(`http://localhost:5000/api/users/${editingUser._id}`, updateData)
+        await axios.put(`${import.meta.env.VITE_API_BASE_URL}/users/${editingUser._id}`, updateData)
       } else {
         if (!formData.password.trim()) {
           alert("Password is required for new users")
           return
         }
-        await axios.post("http://localhost:5000/api/users", formData)
+        await axios.post(`${import.meta.env.VITE_API_BASE_URL}/users`, formData)
       }
       fetchUsers()
       setShowModal(false)
@@ -104,7 +104,7 @@ const UserManagement = () => {
   const handleDelete = async (userId) => {
     if (window.confirm("Are you sure you want to delete this user?")) {
       try {
-        await axios.delete(`http://localhost:5000/api/users/${userId}`)
+        await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/users/${userId}`)
         fetchUsers()
       } catch (error) {
         alert("Failed to delete user")

@@ -33,7 +33,7 @@ const Signup = () => {
         try {
             const token = localStorage.getItem("token");
 
-            const res = await fetch("http://localhost:5000/api/create-user", {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/create-user`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

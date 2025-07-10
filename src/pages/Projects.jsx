@@ -57,7 +57,7 @@ const Projects = () => {
 
   const fetchProjects = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/projects")
+      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/projects`)
       setProjects(response.data)
     } catch (error) {
       console.error("Error fetching projects:", error)
@@ -68,7 +68,7 @@ const Projects = () => {
 
   const fetchProjectDetails = async (projectId) => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/projects/${projectId}`)
+      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/projects/${projectId}`)
       setProjectDetails(response.data)
     } catch (error) {
       console.error("Error fetching project details:", error)
@@ -135,7 +135,7 @@ const Projects = () => {
     if (window.confirm(`Are you sure you want to delete ${selectedFiles.length} file(s)?`)) {
       try {
         for (const fileId of selectedFiles) {
-          await axios.delete(`http://localhost:5000/api/projects/${selectedProject}/files/${fileId}`)
+          await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/projects/${selectedProject}/files/${fileId}`)
         }
         setSelectedFiles([])
         fetchProjectDetails(selectedProject)
@@ -149,7 +149,7 @@ const Projects = () => {
   const handleFileNameEdit = async (fileId) => {
     if (!newFileName.trim() || !selectedProject) return
     try {
-      await axios.put(`http://localhost:5000/api/projects/${selectedProject}/files/${fileId}`, {
+      await axios.put(`${import.meta.env.VITE_API_BASE_URL}/projects/${selectedProject}/files/${fileId}`, {
         displayName: newFileName,
       })
       setEditingFileName(null)
@@ -164,7 +164,7 @@ const Projects = () => {
     if (!selectedProject) return
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/projects/${selectedProject}/files/${fileId}/download?format=${format}`,
+        `${import.meta.env.VITE_API_BASE_URL}/projects/${selectedProject}/files/${fileId}/download?format=${format}`,
         { responseType: "blob" },
       )
       const url = window.URL.createObjectURL(new Blob([response.data]))
@@ -239,7 +239,7 @@ const Projects = () => {
         formData.append("sessionId", uploadToSessionId)
       }
 
-      await axios.post(`http://localhost:5000/api/projects/${selectedProject}/upload`, formData, {
+      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/projects/${selectedProject}/upload`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       })
 
@@ -294,7 +294,7 @@ const Projects = () => {
   const confirmDeleteSession = async () => {
     if (!sessionToDelete || !selectedProject) return
     try {
-      await axios.delete(`http://localhost:5000/api/projects/${selectedProject}/sessions/${sessionToDelete}`)
+      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/projects/${selectedProject}/sessions/${sessionToDelete}`)
       setShowDeleteSessionModal(false)
       setSessionToDelete(null)
       fetchProjectDetails(selectedProject)
@@ -306,7 +306,7 @@ const Projects = () => {
 
   const deleteUploadedFile = async (fileId) => {
     try {
-      await axios.delete(`http://localhost:5000/api/projects/${selectedProject}/files/${fileId}`)
+      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/projects/${selectedProject}/files/${fileId}`)
       fetchProjectDetails(selectedProject)
     } catch (error) {
       setError("Failed to delete file")
@@ -321,7 +321,7 @@ const Projects = () => {
   const handleDelete = async (projectId) => {
     if (window.confirm("Are you sure you want to delete this project?")) {
       try {
-        await axios.delete(`http://localhost:5000/api/projects/${projectId}`)
+        await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/projects/${projectId}`)
         fetchProjects()
         if (selectedProject === projectId) {
           setSelectedProject(null)
@@ -336,7 +336,7 @@ const Projects = () => {
   const handleShare = async (projectId) => {
     setShareLoading(true)
     try {
-      const response = await axios.post(`http://localhost:5000/api/projects/${projectId}/share`)
+      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/projects/${projectId}/share`)
       setShareUrl(response.data.shareUrl)
       setShareExpiry(new Date(response.data.expiryDate).toLocaleDateString())
       setShowShareModal(true)

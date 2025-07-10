@@ -30,7 +30,7 @@
 //         const config = token ? { params: { token } } : {};
         
 //         const response = await axios.get(
-//           `http://localhost:5000/api/projects/${id}`,
+//           `${import.meta.env.VITE_API_BASE_URL}/projects/${id}`,
 //           config
 //         );
         
@@ -94,7 +94,7 @@
 //       };
 
 //       const response = await axios.put(
-//         `http://localhost:5000/api/projects/${id}${token ? `?token=${token}` : ''}`,
+//         `${import.meta.env.VITE_API_BASE_URL}/projects/${id}${token ? `?token=${token}` : ''}`,
 //         formDataToSend,
 //         config
 //       );
@@ -110,7 +110,7 @@
 //   const generateShareLink = async () => {
 //     try {
 //       const response = await axios.post(
-//         `http://localhost:5000/api/projects/${id}/share`,
+//         `${import.meta.env.VITE_API_BASE_URL}/projects/${id}/share`,
 //         { access: shareAccess },
 //         {
 //           headers: {

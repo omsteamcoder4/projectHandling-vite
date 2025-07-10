@@ -27,7 +27,7 @@ const ShareUpload = () => {
 
   const fetchProject = useCallback(async () => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/projects/share/${token}`)
+      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/projects/share/${token}`)
       setProject(response.data)
       if (response.data.type === "public") {
         setIsVerified(true)
@@ -46,7 +46,7 @@ const ShareUpload = () => {
   const verifyPhone = async (e) => {
     e.preventDefault()
     try {
-      await axios.post(`http://localhost:5000/api/projects/share/${token}/verify`, { phoneNumber })
+      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/projects/share/${token}/verify`, { phoneNumber })
       setIsVerified(true)
       setError("")
     } catch (error) {
@@ -118,7 +118,7 @@ const ShareUpload = () => {
     formData.append("sessionId", currentSessionId)
 
     try {
-      await axios.post(`http://localhost:5000/api/projects/share/${token}/upload`, formData, {
+      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/projects/share/${token}/upload`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
         onUploadProgress: (progressEvent) => {
           const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
@@ -203,7 +203,7 @@ const ShareUpload = () => {
 
   const deleteUploadedFile = async (fileId) => {
     try {
-      await axios.delete(`http://localhost:5000/api/projects/share/${token}/files/${fileId}`)
+      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/projects/share/${token}/files/${fileId}`)
       fetchProject()
     } catch (error) {
       setError("Failed to delete file")
@@ -213,7 +213,7 @@ const ShareUpload = () => {
   const updateUploadedFile = async (fileId, updates) => {
     if (!project?._id) return
     try {
-      await axios.put(`http://localhost:5000/api/projects/share/${token}/files/${fileId}`, updates)
+      await axios.put(`${import.meta.env.VITE_API_BASE_URL}/projects/share/${token}/files/${fileId}`, updates)
       fetchProject()
       setEditingFileId(null)
       setEditFileName("")
@@ -225,7 +225,7 @@ const ShareUpload = () => {
   const updateSessionNotes = async (sessionId, notes) => {
     if (!project?._id) return
     try {
-      await axios.put(`http://localhost:5000/api/projects/share/${token}/sessions/${sessionId}`, { notes })
+      await axios.put(`${import.meta.env.VITE_API_BASE_URL}/projects/share/${token}/sessions/${sessionId}`, { notes })
       fetchProject()
       setEditingNotes({})
       setTempNotes({})
@@ -237,7 +237,7 @@ const ShareUpload = () => {
   const deleteSession = async (sessionId) => {
     if (!window.confirm("Are you sure you want to delete this entire session?")) return
     try {
-      await axios.delete(`http://localhost:5000/api/projects/share/${token}/sessions/${sessionId}`)
+      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/projects/share/${token}/sessions/${sessionId}`)
       fetchProject()
     } catch (error) {
       setError("Failed to delete session")
@@ -370,7 +370,7 @@ const ShareUpload = () => {
       // Download non-images directly
       files.forEach(async (file) => {
         const link = document.createElement("a")
-        link.href = `http://localhost:5000/api/projects/share/${token}/files/${file._id}/download`
+        link.href = `${import.meta.env.VITE_API_BASE_URL}/projects/share/${token}/files/${file._id}/download`
         link.download = file.displayName
         link.click()
       })
@@ -383,7 +383,7 @@ const ShareUpload = () => {
       if (currentDownloadFile) {
         // Single file download
         const link = document.createElement("a")
-        link.href = `http://localhost:5000/api/projects/share/${token}/files/${currentDownloadFile._id}/download?format=${selectedImageFormat}`
+        link.href = `${import.meta.env.VITE_API_BASE_URL}/projects/share/${token}/files/${currentDownloadFile._id}/download?format=${selectedImageFormat}`
         link.download = currentDownloadFile.displayName
         link.click()
       } else {
@@ -403,7 +403,7 @@ const ShareUpload = () => {
 
         for (const image of selectedImages) {
           const link = document.createElement("a")
-          link.href = `http://localhost:5000/api/projects/share/${token}/files/${image._id}/download?format=${selectedImageFormat}`
+          link.href = `${import.meta.env.VITE_API_BASE_URL}/projects/share/${token}/files/${image._id}/download?format=${selectedImageFormat}`
           link.download = image.displayName
           link.click()
           await new Promise((resolve) => setTimeout(resolve, 500))
@@ -745,7 +745,7 @@ const ShareUpload = () => {
                       <div className="w-full h-24 bg-gray-100 flex items-center justify-center relative">
                         {file.mimetype?.startsWith("image/") ? (
                           <img
-                            src={`http://localhost:5000/${file.path}`}
+                            src={`${import.meta.env.VITE_API_IMAGE_URL}/${file.path}`}
                             alt={file.displayName}
                             className="object-cover w-full h-full"
                           />
@@ -767,7 +767,7 @@ const ShareUpload = () => {
                           <motion.a
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
-                            href={`http://localhost:5000/api/projects/share/${token}/files/${file._id}/download`}
+                            href={`${import.meta.env.VITE_API_BASE_URL}/projects/share/${token}/files/${file._id}/download`}
                             className="bg-white/90 backdrop-blur-sm text-green-500 hover:bg-green-50 p-1.5 rounded-full shadow-sm transition-colors"
                             title="Download"
                           >

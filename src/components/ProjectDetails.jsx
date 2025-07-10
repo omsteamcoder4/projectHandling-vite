@@ -344,7 +344,7 @@ const ProjectDetails = ({
                             <div className="w-full h-24 bg-gray-100 flex items-center justify-center relative">
                               {file.mimetype?.startsWith("image/") ? (
                                 <img
-                                  src={`http://localhost:5000/${file.path}`}
+                                  src={`${import.meta.env.VITE_API_IMAGE_URL}/${file.path}`}
                                   alt={file.displayName}
                                   className="object-cover w-full h-full"
                                 />

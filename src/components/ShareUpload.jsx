@@ -535,9 +535,8 @@ const ShareUpload = () => {
           className="bg-white rounded-2xl shadow-xl p-3 mb-8 border border-gray-100"
         >
           <div
-            className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 ${
-              isDragging ? "border-indigo-500 bg-indigo-50" : "border-gray-200 hover:border-indigo-300"
-            }`}
+            className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 ${isDragging ? "border-indigo-500 bg-indigo-50" : "border-gray-200 hover:border-indigo-300"
+              }`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}

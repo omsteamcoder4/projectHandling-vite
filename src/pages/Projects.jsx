@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useRef, useEffect } from "react"
 import axios from "axios"
 import ProjectForm from "../components/ProjectForm"
 import ProjectList from "../components/ProjectList"
@@ -50,9 +50,31 @@ const Projects = () => {
 
   const { user } = useAuth()
 
+  const modalRef = useRef(null)
+
+
   // Fetch all projects
   useEffect(() => {
     fetchProjects()
+  }, [])
+
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        setShowDetailsModal(false) // Hide the modal
+        setShowShareModal(false)
+        setShowInfoModal(false)
+        setShowImageDownloadModal(false)
+        setShowUploadModal(false)
+        setShowDeleteSessionModal(false)
+      }
+    }
+
+    document.addEventListener("mousedown", handleOutsideClick)
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick)
+    }
   }, [])
 
   const fetchProjects = async () => {
@@ -469,11 +491,12 @@ const Projects = () => {
 
       {/* Upload Modal */}
       {showUploadModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             className="bg-white rounded-xl p-6 w-full max-w-2xl shadow-xl"
+            ref={modalRef}
           >
             <h3 className="text-lg font-semibold mb-4">
               {uploadToSessionId ? "Add Files to Session" : "Upload Files"}
@@ -481,9 +504,8 @@ const Projects = () => {
 
             {/* Drag and Drop Area */}
             <div
-              className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 mb-4 ${
-                isDragging ? "border-indigo-500 bg-indigo-50" : "border-gray-200 hover:border-indigo-300"
-              }`}
+              className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 mb-4 ${isDragging ? "border-indigo-500 bg-indigo-50" : "border-gray-200 hover:border-indigo-300"
+                }`}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
@@ -563,11 +585,12 @@ const Projects = () => {
 
       {/* Delete Session Modal */}
       {showDeleteSessionModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl"
+            ref={modalRef}
           >
             <h3 className="text-lg font-semibold mb-4">Delete Session</h3>
             <p className="text-gray-600 mb-6">
@@ -597,11 +620,12 @@ const Projects = () => {
 
       {/* Details Modal */}
       {showDetailsModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0  bg-opacity-50 flex items-center justify-center z-50 p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             className="bg-white rounded-xl p-4 w-full max-w-md shadow-xl md:rounded-2xl md:p-6"
+            ref={modalRef}
           >
             <h3 className="text-lg font-semibold mb-3 md:mb-4">{projectDetails?.name} Details</h3>
             <div className="space-y-2 text-sm md:text-base">
@@ -622,13 +646,12 @@ const Projects = () => {
               <div>
                 <span className="font-medium">Type:</span>{" "}
                 <span
-                  className={`px-2 py-0.5 rounded-full text-xs ${
-                    projectDetails?.type === "public"
+                  className={`px-2 py-0.5 rounded-full text-xs ${projectDetails?.type === "public"
                       ? "bg-green-100 text-green-800"
                       : projectDetails?.type === "auth"
                         ? "bg-yellow-100 text-yellow-800"
                         : "bg-red-100 text-red-800"
-                  }`}
+                    }`}
                 >
                   {projectDetails?.type.toUpperCase()}
                 </span>
@@ -669,11 +692,12 @@ const Projects = () => {
       {showForm && <ProjectForm project={editingProject} onClose={handleFormClose} onSuccess={handleFormSuccess} />}
 
       {showShareModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             className="bg-white rounded-xl p-4 w-full max-w-md shadow-xl md:rounded-2xl md:p-6"
+            ref={modalRef}
           >
             <h3 className="text-lg font-semibold mb-3 md:mb-4">Share Project</h3>
             <p className="text-xs md:text-sm text-gray-600 mb-3 md:mb-4">
@@ -710,11 +734,12 @@ const Projects = () => {
       )}
 
       {showInfoModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0  bg-opacity-50 flex items-center justify-center z-50 p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             className="bg-white rounded-xl p-4 w-full max-w-md shadow-xl md:rounded-2xl md:p-6"
+            ref={modalRef}
           >
             <h3 className="text-lg font-semibold mb-3 md:mb-4">Project Information</h3>
             <div className="space-y-2 text-sm md:text-base">
@@ -738,11 +763,12 @@ const Projects = () => {
       )}
 
       {showImageDownloadModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             className="bg-white rounded-xl p-4 w-full max-w-md shadow-xl md:rounded-2xl md:p-6"
+            ref={modalRef}
           >
             <h3 className="text-lg font-semibold mb-3 md:mb-4">Download Images</h3>
             <p className="text-xs md:text-sm text-gray-600 mb-3 md:mb-4">

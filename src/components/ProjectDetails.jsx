@@ -181,17 +181,17 @@ const ProjectDetails = ({
   if (!selectedProject || !projectDetails) {
     return (
       <div className="w-full lg:w-[70%] lg:pl-6 flex-grow overflow-y-auto bg-gradient-to-br from-indigo-50 to-purple-50">
-  <div className="flex items-center justify-center h-screen "> {/* Adjust 64px if Navbar/Footer size changes */}
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
-      <div className="w-14 h-14 md:w-16 md:h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
-        <span className="text-xl md:text-2xl">📁</span>
+        <div className="flex items-center justify-center h-screen "> {/* Adjust 64px if Navbar/Footer size changes */}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
+            <div className="w-14 h-14 md:w-16 md:h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
+              <span className="text-xl md:text-2xl">📁</span>
+            </div>
+            <div className="text-gray-400 text-base md:text-lg">
+              Select a project to view details
+            </div>
+          </motion.div>
+        </div>
       </div>
-      <div className="text-gray-400 text-base md:text-lg">
-        Select a project to view details
-      </div>
-    </motion.div>
-  </div>
-</div>
 
     )
   }
@@ -212,31 +212,44 @@ const ProjectDetails = ({
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <div className="flex items-center justify-between mb-3">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setSelectedProject(null)}
-                className="text-indigo-500 hover:text-indigo-700 flex items-center gap-2 text-4xl"
-              title="back to projects">
-                ← 
-              </motion.button>
-              <div className="flex gap-2">
+            <div className="flex flex-col items-center justify-center mb-3 space-y-2">
+              <div className="flex items-center justify-between w-full">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setSelectedProject(null)}
+                  className="text-indigo-500 hover:text-indigo-700 flex items-center gap-2 text-4xl"
+                  title="back to projects"
+                >
+                  ←
+                </motion.button>
+                {canManageFiles && (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setShowUploadModal(true)}
+                    className="text-indigo-500 hover:text-indigo-700 flex items-center gap-2 text-2xl"
+                  >
+                    <FiUpload className="inline mr-2" />
+
+                  </motion.button>
+                )}
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setShowDetailsModal(true)}
-                className="text-indigo-500 hover:text-indigo-700 flex items-center gap-2 text-2xl"
-                title="view details">
+                  className="text-indigo-500 hover:text-indigo-700 flex items-center gap-2 text-2xl"
+                  title="view details"
+                >
                   <FiInfo />
-                  
                 </motion.button>
-               
-                
               </div>
+
+              {/* Centered Upload Button for Admin/User */}
+
             </div>
-           
           </motion.div>
+
 
           {/* Sessions */}
           {projectDetails.sessions && projectDetails.sessions.length > 0 && (
@@ -246,7 +259,8 @@ const ProjectDetails = ({
               transition={{ delay: 0.6 }}
               className="space-y-6"
             >
-              {projectDetails.sessions.map((session) => {
+              {projectDetails.sessions
+               .sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt)) .map((session) => {
                 const sessionFiles = getSessionFiles(session)
                 const selectedInSession = getSelectedFilesInSession(session)
                 const allSelected = selectedInSession.length === sessionFiles.length && sessionFiles.length > 0
@@ -279,11 +293,10 @@ const ProjectDetails = ({
                               e.stopPropagation()
                               handleSessionDownload(session)
                             }}
-                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors font-medium text-sm ${
-                              someSelected
+                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors font-medium text-sm ${someSelected
                                 ? "bg-blue-50 text-blue-600 hover:bg-blue-100"
                                 : "bg-green-50 text-green-600 hover:bg-green-100"
-                            }`}
+                              }`}
                           >
                             <FiDownload size={14} />
                             {someSelected ? "Download Selected" : "Download All"}
@@ -295,9 +308,9 @@ const ProjectDetails = ({
                             whileTap={{ scale: 0.95 }}
                             onClick={() => onUploadToSession(session.sessionId)}
                             className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-colors font-medium text-sm"
-                          title="Add Files"
+                            title="Add Files"
                           >
-                            <FiPlus size={14} /> 
+                            <FiPlus size={14} />
                           </motion.button>
                         )}
                         {canManageFiles && (
@@ -306,7 +319,7 @@ const ProjectDetails = ({
                             whileTap={{ scale: 0.95 }}
                             onClick={() => onDeleteSession(session.sessionId)}
                             className="flex items-center gap-2 px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition-colors font-medium text-sm"
-                          title="delete session"
+                            title="delete session"
                           >
                             <FiTrash2 size={14} />
                           </motion.button>
@@ -336,9 +349,8 @@ const ProjectDetails = ({
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
                             whileHover={{ y: -2 }}
-                            className={`bg-gray-50 rounded-lg overflow-hidden relative group cursor-pointer ${
-                              selectedFiles.includes(file._id) ? "ring-2 ring-indigo-500" : ""
-                            }`}
+                            className={`bg-gray-50 rounded-lg overflow-hidden relative group cursor-pointer ${selectedFiles.includes(file._id) ? "ring-2 ring-indigo-500" : ""
+                              }`}
                             onClick={(e) => {
                               e.stopPropagation()
                               onFileSelect(file._id)

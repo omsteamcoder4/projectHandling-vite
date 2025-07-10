@@ -180,16 +180,19 @@ const ProjectDetails = ({
 
   if (!selectedProject || !projectDetails) {
     return (
-      <div className="w-full lg:w-[70%] lg:pl-6 overflow-y-auto bg-gradient-to-br from-indigo-50 to-purple-50">
-        <div className="flex items-center justify-center h-full">
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
-            <div className="w-14 h-14 md:w-16 md:h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
-              <span className="text-xl md:text-2xl">📁</span>
-            </div>
-            <div className="text-gray-400 text-base md:text-lg">Select a project to view details</div>
-          </motion.div>
-        </div>
+      <div className="w-full lg:w-[70%] lg:pl-6 flex-grow overflow-y-auto bg-gradient-to-br from-indigo-50 to-purple-50">
+  <div className="flex items-center justify-center h-screen "> {/* Adjust 64px if Navbar/Footer size changes */}
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
+      <div className="w-14 h-14 md:w-16 md:h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
+        <span className="text-xl md:text-2xl">📁</span>
       </div>
+      <div className="text-gray-400 text-base md:text-lg">
+        Select a project to view details
+      </div>
+    </motion.div>
+  </div>
+</div>
+
     )
   }
 

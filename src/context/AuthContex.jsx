@@ -32,9 +32,11 @@ export const AuthProvider = ({ children }) => {
           axios.defaults.headers.common["Authorization"] = `Bearer ${token}`
           const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/auth/me`)
           setUser(response.data)
+          setIsAuthenticated(true)
         } catch (error) {
           localStorage.removeItem("token")
           delete axios.defaults.headers.common["Authorization"]
+          setIsAuthenticated(false)
         }
       }
       setLoading(false)
@@ -77,6 +79,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem("token", token)
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`
       setUser(user)
+      setIsAuthenticated(true)
 
       return { success: true }
     } catch (error) {
@@ -91,6 +94,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("token")
     delete axios.defaults.headers.common["Authorization"]
     setUser(null)
+    setIsAuthenticated(false)
   }
 
   const value = {

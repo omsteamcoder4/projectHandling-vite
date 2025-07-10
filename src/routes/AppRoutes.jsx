@@ -15,7 +15,6 @@ import ProtectedRoute from "../components/ProtectedRoute";
 import ShareUpload from "../components/ShareUpload";
 import UserManagement from "../components/UserManagement";
 import { AuthProvider } from "../context/AuthContex";
-// import ProjectView from "../pages/ProjectView";
 
 const router = createBrowserRouter(
   createRoutesFromElements(

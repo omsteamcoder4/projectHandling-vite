@@ -22,6 +22,10 @@ const ProjectList = ({
   const [showActionMenu, setShowActionMenu] = useState(null)
   const actionMenuRefs = useRef({})
 
+  const handleWheel = (e) => {
+    e.stopPropagation()
+  }
+
   const getTypeIcon = (type) => {
     switch (type) {
       case "public":
@@ -71,19 +75,19 @@ const ProjectList = ({
   })
 
   return (
-    <div className="w-full lg:w-[30%] border-r border-gray-200 lg:pr-4 flex flex-col h-full">
-      {/* Sticky Header Section */}
-      <div className="sticky top-0 z-10 bg-white pt-2 pb-2 border-b border-gray-200">
+    <div
+      className="w-full lg:w-[30%] border-r border-gray-200 lg:pr-4 flex flex-col h-screen overflow-hidden"
+      onWheel={handleWheel}
+    >
+      {/* Fixed Header Section */}
+      <div className="fixed top-0 left-0 right-0 lg:right-auto lg:w-[calc(30%-1rem)] bg-white pt-2 pb-2 border-b border-gray-200 z-[100]">
         <div className="grid grid-cols-3 items-center mb-2 gap-4 p-2">
           <div></div>
           <div>
             <h2 className="text-xl font-bold text-gray-900">Projects</h2>
           </div>
           <div className="flex justify-end mr-2">
-            <button
-              onClick={() => setShowForm(true)}
-              className="p-1 hover:bg-gray-100 rounded"
-            >
+            <button onClick={() => setShowForm(true)} className="p-1 hover:bg-gray-100 rounded">
               <Edit />
             </button>
           </div>
@@ -114,8 +118,7 @@ const ProjectList = ({
         </div>
       </div>
 
-      {/* Scrollable Project List */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto mt-32 lg:mt-36" onWheel={handleWheel}>
         {filteredProjects.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-gray-500 text-lg">
@@ -132,18 +135,28 @@ const ProjectList = ({
               return (
                 <div
                   key={project._id}
-                  className={`bg-white border-b border-gray-400 hover:bg-gray-100 duration-200 cursor-pointer rounded-md ${
-                    selectedProject === project._id ? "bg-blue-100" : ""
-                  }`}
+                  className={`bg-white border-b border-gray-400 hover:bg-gray-100 duration-200 cursor-pointer rounded-md ${selectedProject === project._id ? "bg-blue-100" : ""}`}
                   onClick={() => onProjectClick(project)}
                 >
                   <div className="p-3">
-                    <div className="flex justify-between items-start">
-                      <div className="flex items-center gap-1">
-                        <h3 className="text-lg font-semibold text-gray-900">{project.name}</h3>
-                        {getTypeIcon(project.type)}
+                    <div className="flex justify-between items-center">
+                      {/* Left side content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1">
+                          <h3 className="text-lg font-semibold text-gray-900 truncate">{project.name}</h3>
+                          {getTypeIcon(project.type)}
+                        </div>
+                        <div className="flex items-center text-sm mt-1 text-gray-500">
+                          <Phone size={16} className="mr-1 text-blue-400" />
+                          <span className="truncate">{project.phoneNumber}</span>
+                        </div>
                       </div>
-                      <div className="relative" ref={(el) => (actionMenuRefs.current[project._id] = el)}>
+
+                      {/* Right side menu button - vertically centered */}
+                      <div
+                        className="relative flex items-center ml-2"
+                        ref={(el) => (actionMenuRefs.current[project._id] = el)}
+                      >
                         <button
                           onClick={(e) => toggleActionMenu(project._id, e)}
                           className="p-1 rounded-full hover:bg-gray-100"
@@ -151,7 +164,13 @@ const ProjectList = ({
                           <FiMoreVertical />
                         </button>
                         {showActionMenu === project._id && (
-                          <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 py-1 border border-gray-100">
+                          <div
+                            className="fixed left-95 mt-2 w-48 bg-white rounded-md shadow-lg z-[1000] py-1 border border-gray-100"
+                            style={{
+                              position: "fixed",
+                              zIndex: 1000,
+                            }}
+                          >
                             <button
                               onClick={(e) => {
                                 e.stopPropagation()
@@ -211,12 +230,6 @@ const ProjectList = ({
                             )}
                           </div>
                         )}
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center text-sm mt-1">
-                      <div className="flex items-center text-gray-500">
-                        <Phone size={16} className="mr-1 text-blue-400" />
-                        {project.phoneNumber}
                       </div>
                     </div>
                   </div>

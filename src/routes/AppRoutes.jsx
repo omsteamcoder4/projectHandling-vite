@@ -19,12 +19,12 @@ import { AuthProvider } from "../context/AuthContex";
 const router = createBrowserRouter(
   createRoutesFromElements(
     <>
-      {/* Public Routes */}
+      {/* ── Public Routes ─────────────────────────────── */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Signup />} />
       <Route path="/share/:token" element={<ShareUpload />} />
-      
-      {/* Protected Routes */}
+
+      {/* ── Protected Routes ──────────────────────────── */}
       <Route
         path="/"
         element={
@@ -33,8 +33,13 @@ const router = createBrowserRouter(
           </ProtectedRoute>
         }
       >
-        <Route path="/" element={<MainLayout />} />
+        {/* index route → renders at "/" */}
+        <Route index element={<Projects />} />
+
+        {/* explicit route → renders at "/projects" */}
         <Route path="projects" element={<Projects />} />
+
+        {/* other children */}
         <Route path="add-user" element={<UserManagement />} />
         <Route path="users" element={<UserManagement />} />
         {/* <Route path="projects/:id" element={<ProjectView />} /> */}

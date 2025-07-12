@@ -11,7 +11,6 @@ const Navbar = ({ isOpen, setIsOpen }) => {
   const sidebarRef = useRef(null);
 
   const navItems = [
-    { name: "Home", icon: <Home size={20} />, path: "/projects" },
     { name: "Projects", icon: <Folder size={20} />, path: "/projects" },
     { name: "Add User", icon: <UserPlus size={20} />, path: "/add-user" },
   ];

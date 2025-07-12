@@ -1,14 +1,18 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import axios from "axios"
 
 const ProjectForm = ({ project, onClose, onSuccess }) => {
+
+
+  const modalRef = useRef(null);
+
   const [formData, setFormData] = useState({
     name: "",
     details: "",
     phoneNumber: "",
-    type: "",
+    type: "auth",
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
@@ -23,6 +27,20 @@ const ProjectForm = ({ project, onClose, onSuccess }) => {
       })
     }
   }, [project])
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (modalRef.current && !modalRef.current.contains(event.target)) {
+        onClose(); // close the modal
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
 
   const handleChange = (e) => {
     setFormData({
@@ -51,8 +69,8 @@ const ProjectForm = ({ project, onClose, onSuccess }) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+    <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div ref={modalRef} className="bg-white rounded-lg p-6 w-full max-w-md">
         <h2 className="text-xl font-bold mb-4">{project ? "Edit Project" : "Create Project"}</h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -67,19 +85,6 @@ const ProjectForm = ({ project, onClose, onSuccess }) => {
               required
             />
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Details</label>
-            <textarea
-              name="details"
-              value={formData.details}
-              onChange={handleChange}
-              rows="3"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
             <input
@@ -101,12 +106,25 @@ const ProjectForm = ({ project, onClose, onSuccess }) => {
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             >
-              <option value="">Select Type</option>
-              <option value="public">Public - Anyone with link can upload</option>
               <option value="auth">Auth - Phone verification required</option>
+              <option value="public">Public - Anyone with link can upload</option>
               <option value="private">Private - No sharing allowed</option>
             </select>
           </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Details</label>
+            <textarea
+              name="details"
+              value={formData.details}
+              onChange={handleChange}
+              rows="3"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+
+            />
+          </div>
+
+
 
           {error && <div className="text-red-600 text-sm">{error}</div>}
 

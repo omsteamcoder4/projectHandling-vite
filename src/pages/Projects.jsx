@@ -52,7 +52,6 @@ const Projects = () => {
 
   const modalRef = useRef(null)
 
-
   // Fetch all projects
   useEffect(() => {
     fetchProjects()
@@ -443,8 +442,17 @@ const Projects = () => {
   const totalSize = allFiles.reduce((sum, file) => sum + file.size, 0)
   const canManageFiles = user?.role === "admin" || projectDetails?.createdBy._id === user?.id
 
+  const handleContainerWheel = (e) => {
+    // Allow natural scrolling within child components
+    e.stopPropagation()
+  }
+
   return (
-    <div className="flex flex-col lg:flex-row h-full">
+    <div
+      className="flex flex-col lg:flex-row h-screen overflow-hidden bg-white"
+      onWheel={handleContainerWheel}
+      style={{ touchAction: "pan-y" }}
+    >
       {/* Left Panel - Project List */}
       <ProjectList
         projects={projects}
@@ -504,8 +512,9 @@ const Projects = () => {
 
             {/* Drag and Drop Area */}
             <div
-              className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 mb-4 ${isDragging ? "border-indigo-500 bg-indigo-50" : "border-gray-200 hover:border-indigo-300"
-                }`}
+              className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 mb-4 ${
+                isDragging ? "border-indigo-500 bg-indigo-50" : "border-gray-200 hover:border-indigo-300"
+              }`}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
@@ -646,12 +655,13 @@ const Projects = () => {
               <div>
                 <span className="font-medium">Type:</span>{" "}
                 <span
-                  className={`px-2 py-0.5 rounded-full text-xs ${projectDetails?.type === "public"
+                  className={`px-2 py-0.5 rounded-full text-xs ${
+                    projectDetails?.type === "public"
                       ? "bg-green-100 text-green-800"
                       : projectDetails?.type === "auth"
                         ? "bg-yellow-100 text-yellow-800"
                         : "bg-red-100 text-red-800"
-                    }`}
+                  }`}
                 >
                   {projectDetails?.type.toUpperCase()}
                 </span>

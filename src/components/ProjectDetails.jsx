@@ -302,7 +302,7 @@ const handleFileNameEdit = async (file) => {
 
   if (!selectedProject || !projectDetails) {
     return (
-      <div className="w-full lg:w-[70%] lg:pl-6 flex-grow overflow-y-auto bg-gradient-to-br from-indigo-50 to-purple-50">
+      <div className="w-full lg:w-[98%] lg:pl-6 flex-grow overflow-y-auto bg-gradient-to-br from-indigo-50 to-purple-50">
         <div className="flex items-center justify-center h-full">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center">
             <div className="w-14 h-14 md:w-16 md:h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
@@ -317,7 +317,7 @@ const handleFileNameEdit = async (file) => {
 
   return (
     <div
-      className="w-full lg:w-[70%] lg:pl-6 h-full overflow-hidden bg-gradient-to-br from-indigo-50 to-purple-50"
+      className="w-full lg:w-[88%] h-full overflow-hidden lg:mx-auto bg-gradient-to-br from-indigo-50 to-purple-50"
       onClick={(e) => {
         if (e.target === e.currentTarget || e.target.closest(".session-container")) {
           setSelectedFiles([])
@@ -325,7 +325,7 @@ const handleFileNameEdit = async (file) => {
       }}
     >
       <div className="h-full overflow-y-auto">
-        <div className="min-h-full p-4">
+        <div className="min-h-full">
           <div className="max-w-7xl mx-auto">
             <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
               <div className="mb-6">

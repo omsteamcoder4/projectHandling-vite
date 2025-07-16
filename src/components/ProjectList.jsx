@@ -76,7 +76,7 @@ const ProjectList = ({
 
   return (
     <div
-      className="w-full lg:w-[30%] border-r border-gray-200 lg:pr-4 flex flex-col h-screen overflow-hidden"
+      className="w-full lg:w-[115%] border-r border-gray-200 lg:pr-4 flex flex-col h-screen overflow-hidden"
       onWheel={handleWheel}
     >
       {/* Fixed Header Section */}

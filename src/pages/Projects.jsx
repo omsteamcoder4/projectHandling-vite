@@ -6,7 +6,7 @@ import ProjectList from "../components/ProjectList"
 import ProjectDetails from "../components/ProjectDetails"
 import { useAuth } from "../context/AuthContex"
 import { motion, AnimatePresence } from "framer-motion"
-import { FiX, FiUpload } from "react-icons/fi" // Keep FiUpload for the modal
+import { FiX, FiUpload, FiArrowLeft } from "react-icons/fi"
 import { Phone } from "lucide-react"
 import { ToastContainer, toast } from "react-toastify"
 import 'react-toastify/dist/ReactToastify.css'
@@ -25,22 +25,21 @@ const Projects = () => {
   const [currentProjectInfo, setCurrentProjectInfo] = useState(null)
   const [showDetailsModal, setShowDetailsModal] = useState(false)
   const [error, setError] = useState(null)
+  const [showMobileList, setShowMobileList] = useState(true)
 
   // Project View State (props for ProjectDetails)
   const [projectDetails, setProjectDetails] = useState(null)
   const [selectedFiles, setSelectedFiles] = useState([])
   const [editingFileName, setEditingFileName] = useState(null)
   const [newFileName, setNewFileName] = useState("")
-  // Removed showImageDownloadModal, selectedImageFormat, downloadingImages from here
-  // as they are now managed solely by ProjectDetails.jsx
 
   // File Upload Modal State (for adding to existing sessions)
-  const [showUploadModal, setShowUploadModal] = useState(false) // Keep this for session uploads
-  const [uploadFiles, setUploadFiles] = useState([]) // Keep this for session uploads
-  const [uploadNotes, setUploadNotes] = useState("") // Keep this for session uploads
-  const [uploading, setUploading] = useState(false) // Keep this for session uploads
-  const [isDragging, setIsDragging] = useState(false) // Keep this for session uploads
-  const [uploadToSessionId, setUploadToSessionId] = useState(null) // Keep this for session uploads
+  const [showUploadModal, setShowUploadModal] = useState(false)
+  const [uploadFiles, setUploadFiles] = useState([])
+  const [uploadNotes, setUploadNotes] = useState("")
+  const [uploading, setUploading] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
+  const [uploadToSessionId, setUploadToSessionId] = useState(null)
 
   // Session Management State
   const [showDeleteSessionModal, setShowDeleteSessionModal] = useState(false)
@@ -58,10 +57,9 @@ const Projects = () => {
   useEffect(() => {
     const handleOutsideClick = (event) => {
       if (modalRef.current && !modalRef.current.contains(event.target)) {
-        setShowDetailsModal(false) // Hide the modal
+        setShowDetailsModal(false)
         setShowInfoModal(false)
-        // setShowImageDownloadModal(false) // Removed
-        setShowUploadModal(false) // Close upload modal too
+        setShowUploadModal(false)
         setShowDeleteSessionModal(false)
       }
     }
@@ -84,14 +82,15 @@ const Projects = () => {
       setLoading(false)
     }
   }
+
   const updateSessionNotes = async (sessionId, notes) => {
     try {
-      await axios.put(`${import.meta.env.VITE_API_BASE_URL}/projects/${selectedProject}/sessions/${sessionId}`, { notes });
-      fetchProjectDetails(selectedProject);
+      await axios.put(`${import.meta.env.VITE_API_BASE_URL}/projects/${selectedProject}/sessions/${sessionId}`, { notes })
+      fetchProjectDetails(selectedProject)
     } catch (e) {
-      toast.error("Failed to update notes");
+      toast.error("Failed to update notes")
     }
-  };
+  }
 
   const fetchProjectDetails = async (projectId) => {
     try {
@@ -108,17 +107,24 @@ const Projects = () => {
     if (selectedProject === projectId) {
       setSelectedProject(null)
       setProjectDetails(null)
+      setShowMobileList(true)
     } else {
       setSelectedProject(projectId)
+      setShowMobileList(false)
       await fetchProjectDetails(projectId)
     }
+  }
+
+  const handleBackToList = () => {
+    setShowMobileList(true)
+    setSelectedProject(null)
+    setProjectDetails(null)
   }
 
   const getAllFiles = () => {
     if (!projectDetails) return []
     let allFiles = []
 
-    // Get files from sessions
     if (projectDetails.sessions) {
       projectDetails.sessions.forEach((session) => {
         if (session.files) {
@@ -127,7 +133,6 @@ const Projects = () => {
       })
     }
 
-    // Get legacy files
     if (projectDetails.files) {
       allFiles = [...allFiles, ...projectDetails.files]
     }
@@ -243,7 +248,6 @@ const Projects = () => {
       })
       formData.append("notes", uploadNotes)
 
-      // If uploading to specific session, add sessionId
       if (uploadToSessionId) {
         formData.append("sessionId", uploadToSessionId)
       }
@@ -256,7 +260,7 @@ const Projects = () => {
       setUploadFiles([])
       setUploadNotes("")
       setUploadToSessionId(null)
-      fetchProjectDetails(selectedProject) // Refresh details after session upload
+      fetchProjectDetails(selectedProject)
       toast.success("Files uploaded successfully!")
     } catch (error) {
       toast.error("Failed to upload files")
@@ -456,18 +460,19 @@ const Projects = () => {
     const i = Math.floor(Math.log(bytes) / Math.log(k))
     return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
   }
+
   const onEditFileName = async (fileId, newName) => {
     try {
       await axios.put(
         `${import.meta.env.VITE_API_BASE_URL}/projects/${selectedProject}/files/${fileId}`,
         { displayName: newName }
-      );
-      console.log("✅ File name updated successfully");
+      )
+      console.log("✅ File name updated successfully")
     } catch (error) {
-      console.error("❌ Failed to rename file:", error);
-      throw error;
+      console.error("❌ Failed to rename file:", error)
+      throw error
     }
-  };
+  }
 
   const formatDate = (dateString) => {
     const date = new Date(dateString)
@@ -504,26 +509,43 @@ const Projects = () => {
     <div className="h-full flex flex-col lg:flex-row overflow-hidden bg-white">
       <ToastContainer position="top-right" autoClose={5000} />
 
-      {/* Left Panel - Project List */}
-      <ProjectList
-        projects={projects}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        filterType={filterType}
-        setFilterType={setFilterType}
-        selectedProject={selectedProject}
-        onProjectClick={handleProjectClick}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onShare={handleShare}
-        onInfo={handleInfo}
-        shareLoading={shareLoading}
-        user={user}
-        setShowForm={setShowForm}
-      />
+      {/* Mobile Header */}
+      <div className="lg:hidden fixed top-0 left-15 right-0 bg-white z-50 border-b border-gray-200 p-3 flex items-center">
+        {!showMobileList ? (
+          <button
+            onClick={handleBackToList}
+            className="mr-3 p-1 rounded-full hover:bg-gray-100"
+          >
+            <FiArrowLeft size={20} />
+          </button>
+        ) : null}
+        <h2 className="text-xl font-bold text-gray-900">
+          {showMobileList ? "Projects" : projectDetails?.name || "Project Details"}
+        </h2>
+      </div>
 
-      {/* Right Panel - Project Details */}
-      <ProjectDetails
+      {/* Left Panel - Project List (shown on mobile when showMobileList is true) */}
+      <div className={`lg:w-1/3 xl:w-1/4 2xl:w-1/5 ${showMobileList ? 'block' : 'hidden'} lg:block`}>
+        <ProjectList
+          projects={projects}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          filterType={filterType}
+          setFilterType={setFilterType}
+          selectedProject={selectedProject}
+          onProjectClick={handleProjectClick}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onShare={handleShare}
+          onInfo={handleInfo}
+          shareLoading={shareLoading}
+          user={user}
+          setShowForm={setShowForm}
+        />
+      </div>
+
+      {/* Right Panel - Project Details (shown on mobile when showMobileList is false) */}
+      <div className={`flex-1 min-w-0 ${!showMobileList ? 'block' : 'hidden'} lg:block`}>        <ProjectDetails
         onEditFileName={onEditFileName}
         projectDetails={projectDetails}
         selectedProject={selectedProject}
@@ -546,6 +568,7 @@ const Projects = () => {
         fetchProjectDetails={fetchProjectDetails}
         onEditSessionNotes={updateSessionNotes}
       />
+      </div>
 
       {/* Upload Modal (for adding to existing sessions) */}
       {showUploadModal && (
@@ -605,6 +628,15 @@ const Projects = () => {
             )}
 
             {/* Notes */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Session Notes</label>
+              <textarea
+                value={uploadNotes}
+                onChange={(e) => setUploadNotes(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Add notes about this upload..."
+              />
+            </div>
 
             {/* Actions */}
             <div className="flex gap-2">
@@ -737,8 +769,6 @@ const Projects = () => {
 
       {/* Other Modals */}
       {showForm && <ProjectForm project={editingProject} onClose={handleFormClose} onSuccess={handleFormSuccess} />}
-
-
 
       {showInfoModal && (
         <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 p-4">

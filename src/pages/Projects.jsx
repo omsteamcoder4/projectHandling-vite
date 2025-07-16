@@ -84,14 +84,14 @@ const Projects = () => {
       setLoading(false)
     }
   }
-const updateSessionNotes = async (sessionId, notes) => {
-  try {
-    await axios.put(`${import.meta.env.VITE_API_BASE_URL}/projects/${selectedProject}/sessions/${sessionId}`, { notes });
-    fetchProjectDetails(selectedProject);
-  } catch (e) {
-    toast.error("Failed to update notes");
-  }
-};
+  const updateSessionNotes = async (sessionId, notes) => {
+    try {
+      await axios.put(`${import.meta.env.VITE_API_BASE_URL}/projects/${selectedProject}/sessions/${sessionId}`, { notes });
+      fetchProjectDetails(selectedProject);
+    } catch (e) {
+      toast.error("Failed to update notes");
+    }
+  };
 
   const fetchProjectDetails = async (projectId) => {
     try {
@@ -150,13 +150,13 @@ const updateSessionNotes = async (sessionId, notes) => {
 
   const handleBulkDelete = async () => {
     if (selectedFiles.length === 0 || !selectedProject) return
-    
+
     const confirm = await new Promise((resolve) => {
       toast.info(
         <div>
           <p>Are you sure you want to delete {selectedFiles.length} file(s)?</p>
           <div className="flex gap-2 mt-2">
-            <button 
+            <button
               onClick={() => {
                 toast.dismiss()
                 resolve(true)
@@ -165,7 +165,7 @@ const updateSessionNotes = async (sessionId, notes) => {
             >
               Delete
             </button>
-            <button 
+            <button
               onClick={() => {
                 toast.dismiss()
                 resolve(false)
@@ -333,7 +333,7 @@ const updateSessionNotes = async (sessionId, notes) => {
         <div>
           <p>Are you sure you want to delete this project?</p>
           <div className="flex gap-2 mt-2">
-            <button 
+            <button
               onClick={() => {
                 toast.dismiss()
                 resolve(true)
@@ -342,7 +342,7 @@ const updateSessionNotes = async (sessionId, notes) => {
             >
               Delete
             </button>
-            <button 
+            <button
               onClick={() => {
                 toast.dismiss()
                 resolve(false)
@@ -374,33 +374,33 @@ const updateSessionNotes = async (sessionId, notes) => {
     }
   }
 
- const handleShare = async (projectId) => {
-  setShareLoading(true)
-  try {
-    const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/projects/${projectId}/share`)
-    const shareUrl = response.data.shareUrl
-    
+  const handleShare = async (projectId) => {
+    setShareLoading(true)
     try {
-      await navigator.clipboard.writeText(shareUrl)
-      toast.success("Share link copied to clipboard!")
+      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/projects/${projectId}/share`)
+      const shareUrl = response.data.shareUrl
+
+      try {
+        await navigator.clipboard.writeText(shareUrl)
+        toast.success("Share link copied to clipboard!")
+      } catch (error) {
+        const textArea = document.createElement("textarea")
+        textArea.value = shareUrl
+        document.body.appendChild(textArea)
+        textArea.select()
+        document.execCommand("copy")
+        document.body.removeChild(textArea)
+        toast.success("Share link copied to clipboard!")
+      }
+
+      return response.data
     } catch (error) {
-      const textArea = document.createElement("textarea")
-      textArea.value = shareUrl
-      document.body.appendChild(textArea)
-      textArea.select()
-      document.execCommand("copy")
-      document.body.removeChild(textArea)
-      toast.success("Share link copied to clipboard!")
+      toast.error("Failed to generate share link")
+      throw error
+    } finally {
+      setShareLoading(false)
     }
-    
-    return response.data
-  } catch (error) {
-    toast.error("Failed to generate share link")
-    throw error
-  } finally {
-    setShareLoading(false)
   }
-}
 
   const handleInfo = (project) => {
     const currentProjectAllFiles = project.sessions ? project.sessions.flatMap((s) => s.files || []) : []
@@ -456,6 +456,18 @@ const updateSessionNotes = async (sessionId, notes) => {
     const i = Math.floor(Math.log(bytes) / Math.log(k))
     return Number.parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i]
   }
+  const onEditFileName = async (fileId, newName) => {
+    try {
+      await axios.put(
+        `${import.meta.env.VITE_API_BASE_URL}/projects/${selectedProject}/files/${fileId}`,
+        { displayName: newName }
+      );
+      console.log("✅ File name updated successfully");
+    } catch (error) {
+      console.error("❌ Failed to rename file:", error);
+      throw error;
+    }
+  };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString)
@@ -491,7 +503,7 @@ const updateSessionNotes = async (sessionId, notes) => {
   return (
     <div className="h-full flex flex-col lg:flex-row overflow-hidden bg-white">
       <ToastContainer position="top-right" autoClose={5000} />
-      
+
       {/* Left Panel - Project List */}
       <ProjectList
         projects={projects}
@@ -512,6 +524,7 @@ const updateSessionNotes = async (sessionId, notes) => {
 
       {/* Right Panel - Project Details */}
       <ProjectDetails
+        onEditFileName={onEditFileName}
         projectDetails={projectDetails}
         selectedProject={selectedProject}
         canManageFiles={canManageFiles}
@@ -525,7 +538,6 @@ const updateSessionNotes = async (sessionId, notes) => {
         onBulkDelete={handleBulkDelete}
         onDownloadFile={downloadFile}
         onDeleteFile={deleteUploadedFile}
-        onEditFileName={handleFileNameEdit}
         editingFileName={editingFileName}
         setEditingFileName={setEditingFileName}
         newFileName={newFileName}
@@ -550,9 +562,8 @@ const updateSessionNotes = async (sessionId, notes) => {
 
             {/* Drag and Drop Area */}
             <div
-              className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 mb-4 ${
-                isDragging ? "border-indigo-500 bg-indigo-50" : "border-gray-200 hover:border-indigo-300"
-              }`}
+              className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 mb-4 ${isDragging ? "border-indigo-500 bg-indigo-50" : "border-gray-200 hover:border-indigo-300"
+                }`}
               onDragOver={handleDragOverModal}
               onDragLeave={handleDragLeaveModal}
               onDrop={handleDropModal}
@@ -594,7 +605,7 @@ const updateSessionNotes = async (sessionId, notes) => {
             )}
 
             {/* Notes */}
-            
+
             {/* Actions */}
             <div className="flex gap-2">
               <button
@@ -682,13 +693,12 @@ const updateSessionNotes = async (sessionId, notes) => {
               <div>
                 <span className="font-medium">Type:</span>{" "}
                 <span
-                  className={`px-2 py-0.5 rounded-full text-xs ${
-                    currentProjectInfo?.type === "public"
-                      ? "bg-green-100 text-green-800"
-                      : currentProjectInfo?.type === "auth"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : "bg-red-100 text-red-800"
-                  }`}
+                  className={`px-2 py-0.5 rounded-full text-xs ${currentProjectInfo?.type === "public"
+                    ? "bg-green-100 text-green-800"
+                    : currentProjectInfo?.type === "auth"
+                      ? "bg-yellow-100 text-yellow-800"
+                      : "bg-red-100 text-red-800"
+                    }`}
                 >
                   {currentProjectInfo?.type?.toUpperCase()}
                 </span>
@@ -728,7 +738,7 @@ const updateSessionNotes = async (sessionId, notes) => {
       {/* Other Modals */}
       {showForm && <ProjectForm project={editingProject} onClose={handleFormClose} onSuccess={handleFormSuccess} />}
 
-     
+
 
       {showInfoModal && (
         <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -756,13 +766,12 @@ const updateSessionNotes = async (sessionId, notes) => {
               <div>
                 <span className="font-medium">Type:</span>{" "}
                 <span
-                  className={`px-2 py-0.5 rounded-full text-xs ${
-                    currentProjectInfo?.type === "public"
-                      ? "bg-green-100 text-green-800"
-                      : currentProjectInfo?.type === "auth"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : "bg-red-100 text-red-800"
-                  }`}
+                  className={`px-2 py-0.5 rounded-full text-xs ${currentProjectInfo?.type === "public"
+                    ? "bg-green-100 text-green-800"
+                    : currentProjectInfo?.type === "auth"
+                      ? "bg-yellow-100 text-yellow-800"
+                      : "bg-red-100 text-red-800"
+                    }`}
                 >
                   {currentProjectInfo?.type?.toUpperCase()}
                 </span>

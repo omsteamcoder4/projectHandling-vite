@@ -128,8 +128,8 @@ const ProjectList = ({
         ) : (
           <div className="space-y-2 p-2">
             {filteredProjects.map((project) => {
-              const canEdit = user.role === "admin" || project.createdBy._id === user.id
-              const canDelete = user.role === "admin" || project.createdBy._id === user.id
+              const canEdit = user.role === "admin" || project.createdBy?._id === user.id
+              const canDelete = user.role === "admin" || project.createdBy?._id === user.id
               const canShare = (project.type === "public" || project.type === "auth") && canEdit
 
               return (

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { useParams } from "react-router-dom"
 import axios from "axios"
-import { FiUpload, FiX, FiTrash2, FiPlus, FiCheck, FiDownload, FiClock, FiLoader } from "react-icons/fi"
+import { FiUpload, FiX, FiTrash2, FiPlus, FiCheck, FiClock, FiLoader } from "react-icons/fi"
 import { motion, AnimatePresence } from "framer-motion"
 
 const ShareUpload = () => {
@@ -485,7 +485,7 @@ const ShareUpload = () => {
                 type="tel"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
-                placeholder="+1 (___) ___-____"
+                placeholder="Enter Your Number"
                 className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                 required
               />
@@ -540,6 +540,8 @@ const ShareUpload = () => {
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
+            onClick={() => document.getElementById("main-file-input").click()}
+            
           >
             <input type="file" id="main-file-input" multiple onChange={handleMainFileSelect} className="hidden" />
             <motion.div whileHover={{ scale: 1.05 }} className="inline-block mb-4">
@@ -553,7 +555,6 @@ const ShareUpload = () => {
             <h3 className="text-xl font-semibold text-gray-800 mb-1">
               {isDragging ? "Drop your files here" : "Drag & Drop files here"}
             </h3>
-            <p className="text-gray-500 text-sm">or click the upload icon to browse</p>
           </div>
         </motion.div>
 
@@ -678,7 +679,7 @@ const ShareUpload = () => {
                     <textarea
                       value={tempNotes[sessionKey] || ""}
                       onChange={(e) => setTempNotes((prev) => ({ ...prev, [sessionKey]: e.target.value }))}
-                      className="w-full px-0 py-1 text-sm text-gray-700 bg-transparent border-none focus:ring-0 focus:outline-none resize-none"
+                      className="w-max px-0 py-1 text-sm text-gray-700 bg-transparent border-none focus:ring-0 focus:outline-none resize-none"
                       rows={Math.max(1, Math.min(5, tempNotes[sessionKey]?.split("\n").length || 1))}
                       placeholder="Type your notes here..."
                       autoFocus
@@ -763,7 +764,7 @@ const ShareUpload = () => {
                           >
                             <FiTrash2 size={12} />
                           </motion.button>
-                          <motion.a
+                          {/* <motion.a
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
                             href={`${import.meta.env.VITE_API_BASE_URL}/projects/share/${token}/files/${file._id}/download`}
@@ -771,7 +772,7 @@ const ShareUpload = () => {
                             title="Download"
                           >
                             <FiDownload size={12} />
-                          </motion.a>
+                          </motion.a> */}
                         </div>
                       </div>
 

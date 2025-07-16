@@ -6,8 +6,10 @@ import ProjectList from "../components/ProjectList"
 import ProjectDetails from "../components/ProjectDetails"
 import { useAuth } from "../context/AuthContex"
 import { motion, AnimatePresence } from "framer-motion"
-import { FiX, FiUpload } from "react-icons/fi"
+import { FiX, FiUpload } from "react-icons/fi" // Keep FiUpload for the modal
 import { Phone } from "lucide-react"
+import { ToastContainer, toast } from "react-toastify"
+import 'react-toastify/dist/ReactToastify.css'
 
 const Projects = () => {
   // Project List State
@@ -17,9 +19,6 @@ const Projects = () => {
   const [showForm, setShowForm] = useState(false)
   const [editingProject, setEditingProject] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [showShareModal, setShowShareModal] = useState(false)
-  const [shareUrl, setShareUrl] = useState("")
-  const [shareExpiry, setShareExpiry] = useState("")
   const [shareLoading, setShareLoading] = useState(false)
   const [selectedProject, setSelectedProject] = useState(null)
   const [showInfoModal, setShowInfoModal] = useState(false)
@@ -27,22 +26,21 @@ const Projects = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false)
   const [error, setError] = useState(null)
 
-  // Project View State
+  // Project View State (props for ProjectDetails)
   const [projectDetails, setProjectDetails] = useState(null)
   const [selectedFiles, setSelectedFiles] = useState([])
   const [editingFileName, setEditingFileName] = useState(null)
   const [newFileName, setNewFileName] = useState("")
-  const [showImageDownloadModal, setShowImageDownloadModal] = useState(false)
-  const [selectedImageFormat, setSelectedImageFormat] = useState("original")
-  const [downloadingImages, setDownloadingImages] = useState(false)
+  // Removed showImageDownloadModal, selectedImageFormat, downloadingImages from here
+  // as they are now managed solely by ProjectDetails.jsx
 
-  // File Upload State
-  const [showUploadModal, setShowUploadModal] = useState(false)
-  const [uploadFiles, setUploadFiles] = useState([])
-  const [uploadNotes, setUploadNotes] = useState("")
-  const [uploading, setUploading] = useState(false)
-  const [isDragging, setIsDragging] = useState(false)
-  const [uploadToSessionId, setUploadToSessionId] = useState(null)
+  // File Upload Modal State (for adding to existing sessions)
+  const [showUploadModal, setShowUploadModal] = useState(false) // Keep this for session uploads
+  const [uploadFiles, setUploadFiles] = useState([]) // Keep this for session uploads
+  const [uploadNotes, setUploadNotes] = useState("") // Keep this for session uploads
+  const [uploading, setUploading] = useState(false) // Keep this for session uploads
+  const [isDragging, setIsDragging] = useState(false) // Keep this for session uploads
+  const [uploadToSessionId, setUploadToSessionId] = useState(null) // Keep this for session uploads
 
   // Session Management State
   const [showDeleteSessionModal, setShowDeleteSessionModal] = useState(false)
@@ -61,10 +59,9 @@ const Projects = () => {
     const handleOutsideClick = (event) => {
       if (modalRef.current && !modalRef.current.contains(event.target)) {
         setShowDetailsModal(false) // Hide the modal
-        setShowShareModal(false)
         setShowInfoModal(false)
-        setShowImageDownloadModal(false)
-        setShowUploadModal(false)
+        // setShowImageDownloadModal(false) // Removed
+        setShowUploadModal(false) // Close upload modal too
         setShowDeleteSessionModal(false)
       }
     }
@@ -82,10 +79,19 @@ const Projects = () => {
       setProjects(response.data)
     } catch (error) {
       console.error("Error fetching projects:", error)
+      toast.error("Failed to load projects")
     } finally {
       setLoading(false)
     }
   }
+const updateSessionNotes = async (sessionId, notes) => {
+  try {
+    await axios.put(`${import.meta.env.VITE_API_BASE_URL}/projects/${selectedProject}/sessions/${sessionId}`, { notes });
+    fetchProjectDetails(selectedProject);
+  } catch (e) {
+    toast.error("Failed to update notes");
+  }
+};
 
   const fetchProjectDetails = async (projectId) => {
     try {
@@ -93,6 +99,7 @@ const Projects = () => {
       setProjectDetails(response.data)
     } catch (error) {
       console.error("Error fetching project details:", error)
+      toast.error("Failed to load project details")
     }
   }
 
@@ -128,16 +135,6 @@ const Projects = () => {
     return allFiles
   }
 
-  const getSelectedImages = () => {
-    const allFiles = getAllFiles()
-    return allFiles.filter((file) => selectedFiles.includes(file._id) && file.mimetype?.startsWith("image/"))
-  }
-
-  const getSelectedNonImages = () => {
-    const allFiles = getAllFiles()
-    return allFiles.filter((file) => selectedFiles.includes(file._id) && !file.mimetype?.startsWith("image/"))
-  }
-
   const handleFileSelect = (fileId) => {
     setSelectedFiles((prev) => (prev.includes(fileId) ? prev.filter((id) => id !== fileId) : [...prev, fileId]))
   }
@@ -153,17 +150,50 @@ const Projects = () => {
 
   const handleBulkDelete = async () => {
     if (selectedFiles.length === 0 || !selectedProject) return
-    if (window.confirm(`Are you sure you want to delete ${selectedFiles.length} file(s)?`)) {
-      try {
-        for (const fileId of selectedFiles) {
-          await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/projects/${selectedProject}/files/${fileId}`)
+    
+    const confirm = await new Promise((resolve) => {
+      toast.info(
+        <div>
+          <p>Are you sure you want to delete {selectedFiles.length} file(s)?</p>
+          <div className="flex gap-2 mt-2">
+            <button 
+              onClick={() => {
+                toast.dismiss()
+                resolve(true)
+              }}
+              className="px-3 py-1 bg-red-500 text-white rounded"
+            >
+              Delete
+            </button>
+            <button 
+              onClick={() => {
+                toast.dismiss()
+                resolve(false)
+              }}
+              className="px-3 py-1 bg-gray-500 text-white rounded"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>,
+        {
+          autoClose: false,
+          closeButton: false
         }
-        setSelectedFiles([])
-        fetchProjectDetails(selectedProject)
-        alert("Files deleted successfully!")
-      } catch (error) {
-        alert("Failed to delete some files")
+      )
+    })
+
+    if (!confirm) return
+
+    try {
+      for (const fileId of selectedFiles) {
+        await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/projects/${selectedProject}/files/${fileId}`)
       }
+      setSelectedFiles([])
+      fetchProjectDetails(selectedProject)
+      toast.success("Files deleted successfully!")
+    } catch (error) {
+      toast.error("Failed to delete some files")
     }
   }
 
@@ -177,7 +207,7 @@ const Projects = () => {
       setNewFileName("")
       fetchProjectDetails(selectedProject)
     } catch (error) {
-      alert("Failed to update file name")
+      toast.error("Failed to update file name")
     }
   }
 
@@ -196,54 +226,12 @@ const Projects = () => {
       link.click()
       link.remove()
       window.URL.revokeObjectURL(url)
+      toast.success("File downloaded successfully!")
     } catch (error) {
-      alert("Failed to download file")
+      toast.error("Failed to download file")
     }
   }
 
-  const downloadImages = async () => {
-    const selectedImages = getSelectedImages()
-    if (selectedImages.length === 0 || !selectedProject) return
-    setDownloadingImages(true)
-    try {
-      for (const image of selectedImages) {
-        let fileName = image.displayName
-        if (selectedImageFormat !== "original") {
-          fileName = fileName.replace(/\.[^/.]+$/, `.${selectedImageFormat}`)
-        }
-        await downloadFile(image._id, fileName, selectedImageFormat)
-        await new Promise((resolve) => setTimeout(resolve, 500))
-      }
-      setShowImageDownloadModal(false)
-      setSelectedFiles([])
-      alert(`${selectedImages.length} image(s) downloaded successfully!`)
-    } catch (error) {
-      alert("Failed to download some images")
-    } finally {
-      setDownloadingImages(false)
-    }
-  }
-
-  const downloadNonImages = async () => {
-    const nonImages = getSelectedNonImages()
-    for (const file of nonImages) {
-      await downloadFile(file._id, file.displayName)
-      await new Promise((resolve) => setTimeout(resolve, 500))
-    }
-  }
-
-  const handleBulkDownload = () => {
-    const selectedImages = getSelectedImages()
-    const selectedNonImages = getSelectedNonImages()
-    if (selectedImages.length > 0) {
-      setShowImageDownloadModal(true)
-    } else if (selectedNonImages.length > 0) {
-      downloadNonImages()
-      setSelectedFiles([])
-    }
-  }
-
-  // File Upload Functions
   const handleUploadFiles = async () => {
     if (uploadFiles.length === 0) return
 
@@ -268,30 +256,30 @@ const Projects = () => {
       setUploadFiles([])
       setUploadNotes("")
       setUploadToSessionId(null)
-      fetchProjectDetails(selectedProject)
-      alert("Files uploaded successfully!")
+      fetchProjectDetails(selectedProject) // Refresh details after session upload
+      toast.success("Files uploaded successfully!")
     } catch (error) {
-      alert("Failed to upload files")
+      toast.error("Failed to upload files")
     } finally {
       setUploading(false)
     }
   }
 
-  const handleFileInputChange = (e) => {
+  const handleFileInputChangeModal = (e) => {
     const selectedFiles = Array.from(e.target.files)
     setUploadFiles(selectedFiles)
   }
 
-  const handleDragOver = (e) => {
+  const handleDragOverModal = (e) => {
     e.preventDefault()
     setIsDragging(true)
   }
 
-  const handleDragLeave = () => {
+  const handleDragLeaveModal = () => {
     setIsDragging(false)
   }
 
-  const handleDrop = (e) => {
+  const handleDropModal = (e) => {
     e.preventDefault()
     setIsDragging(false)
     const droppedFiles = Array.from(e.dataTransfer.files)
@@ -319,9 +307,8 @@ const Projects = () => {
       setShowDeleteSessionModal(false)
       setSessionToDelete(null)
       fetchProjectDetails(selectedProject)
-      alert("Session deleted successfully!")
     } catch (error) {
-      alert("Failed to delete session")
+      toast.error("Failed to delete session")
     }
   }
 
@@ -331,6 +318,7 @@ const Projects = () => {
       fetchProjectDetails(selectedProject)
     } catch (error) {
       setError("Failed to delete file")
+      toast.error("Failed to delete file")
     }
   }
 
@@ -340,48 +328,61 @@ const Projects = () => {
   }
 
   const handleDelete = async (projectId) => {
-    if (window.confirm("Are you sure you want to delete this project?")) {
-      try {
-        await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/projects/${projectId}`)
-        fetchProjects()
-        if (selectedProject === projectId) {
-          setSelectedProject(null)
-          setProjectDetails(null)
+    const confirm = await new Promise((resolve) => {
+      toast.info(
+        <div>
+          <p>Are you sure you want to delete this project?</p>
+          <div className="flex gap-2 mt-2">
+            <button 
+              onClick={() => {
+                toast.dismiss()
+                resolve(true)
+              }}
+              className="px-3 py-1 bg-red-500 text-white rounded"
+            >
+              Delete
+            </button>
+            <button 
+              onClick={() => {
+                toast.dismiss()
+                resolve(false)
+              }}
+              className="px-3 py-1 bg-gray-500 text-white rounded"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>,
+        {
+          autoClose: false,
+          closeButton: false
         }
-      } catch (error) {
-        alert("Failed to delete project")
-      }
-    }
-  }
-
-  const handleShare = async (projectId) => {
-    setShareLoading(true)
-    try {
-      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/projects/${projectId}/share`)
-      setShareUrl(response.data.shareUrl)
-      setShareExpiry(new Date(response.data.expiryDate).toLocaleDateString())
-      setShowShareModal(true)
-      return response.data
-    } catch (error) {
-      alert("Failed to generate share link")
-      throw error
-    } finally {
-      setShareLoading(false)
-    }
-  }
-
-  const handleInfo = (project) => {
-    setCurrentProjectInfo({
-      createdBy: project.createdByType === "admin" ? "Admin" : project.createdBy.username,
-      createdAt: new Date(project.createdAt).toLocaleDateString(),
+      )
     })
-    setShowInfoModal(true)
+
+    if (!confirm) return
+
+    try {
+      await axios.delete(`${import.meta.env.VITE_API_BASE_URL}/projects/${projectId}`)
+      fetchProjects()
+      if (selectedProject === projectId) {
+        setSelectedProject(null)
+        setProjectDetails(null)
+      }
+    } catch (error) {
+      toast.error("Failed to delete project")
+    }
   }
 
-  const copyToClipboard = async () => {
+ const handleShare = async (projectId) => {
+  setShareLoading(true)
+  try {
+    const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/projects/${projectId}/share`)
+    const shareUrl = response.data.shareUrl
+    
     try {
       await navigator.clipboard.writeText(shareUrl)
-      alert("Share link copied to clipboard!")
+      toast.success("Share link copied to clipboard!")
     } catch (error) {
       const textArea = document.createElement("textarea")
       textArea.value = shareUrl
@@ -389,7 +390,52 @@ const Projects = () => {
       textArea.select()
       document.execCommand("copy")
       document.body.removeChild(textArea)
-      alert("Share link copied to clipboard!")
+      toast.success("Share link copied to clipboard!")
+    }
+    
+    return response.data
+  } catch (error) {
+    toast.error("Failed to generate share link")
+    throw error
+  } finally {
+    setShareLoading(false)
+  }
+}
+
+  const handleInfo = (project) => {
+    const currentProjectAllFiles = project.sessions ? project.sessions.flatMap((s) => s.files || []) : []
+    if (project.files) {
+      currentProjectAllFiles.push(...project.files)
+    }
+    const totalFilesForInfo = currentProjectAllFiles.length
+    const totalSizeForInfo = currentProjectAllFiles.reduce((sum, file) => sum + file.size, 0)
+
+    setCurrentProjectInfo({
+      name: project.name,
+      details: project.details,
+      phoneNumber: project.phoneNumber,
+      type: project.type,
+      shareLink: project.shareLink,
+      createdBy: project.createdByType === "admin" ? "Admin" : project.createdBy.username,
+      createdAt: new Date(project.createdAt).toLocaleDateString(),
+      totalFiles: totalFilesForInfo,
+      totalSize: totalSizeForInfo,
+    })
+    setShowInfoModal(true)
+  }
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      toast.success("Share link copied to clipboard!")
+    } catch (error) {
+      const textArea = document.createElement("textarea")
+      textArea.value = shareUrl
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand("copy")
+      document.body.removeChild(textArea)
+      toast.success("Share link copied to clipboard!")
     }
   }
 
@@ -442,17 +488,10 @@ const Projects = () => {
   const totalSize = allFiles.reduce((sum, file) => sum + file.size, 0)
   const canManageFiles = user?.role === "admin" || projectDetails?.createdBy._id === user?.id
 
-  const handleContainerWheel = (e) => {
-    // Allow natural scrolling within child components
-    e.stopPropagation()
-  }
-
   return (
-    <div
-      className="flex flex-col lg:flex-row h-screen overflow-hidden bg-white"
-      onWheel={handleContainerWheel}
-      style={{ touchAction: "pan-y" }}
-    >
+    <div className="h-full flex flex-col lg:flex-row overflow-hidden bg-white">
+      <ToastContainer position="top-right" autoClose={5000} />
+      
       {/* Left Panel - Project List */}
       <ProjectList
         projects={projects}
@@ -475,7 +514,6 @@ const Projects = () => {
       <ProjectDetails
         projectDetails={projectDetails}
         selectedProject={selectedProject}
-        setSelectedProject={setSelectedProject}
         canManageFiles={canManageFiles}
         user={user}
         selectedFiles={selectedFiles}
@@ -484,7 +522,6 @@ const Projects = () => {
         onDeleteSession={handleDeleteSession}
         onFileSelect={handleFileSelect}
         onSelectAll={handleSelectAll}
-        onBulkDownload={handleBulkDownload}
         onBulkDelete={handleBulkDelete}
         onDownloadFile={downloadFile}
         onDeleteFile={deleteUploadedFile}
@@ -493,11 +530,12 @@ const Projects = () => {
         setEditingFileName={setEditingFileName}
         newFileName={newFileName}
         setNewFileName={setNewFileName}
-        setShowUploadModal={setShowUploadModal}
         setShowDetailsModal={setShowDetailsModal}
+        fetchProjectDetails={fetchProjectDetails}
+        onEditSessionNotes={updateSessionNotes}
       />
 
-      {/* Upload Modal */}
+      {/* Upload Modal (for adding to existing sessions) */}
       {showUploadModal && (
         <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 p-4">
           <motion.div
@@ -515,11 +553,11 @@ const Projects = () => {
               className={`border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300 mb-4 ${
                 isDragging ? "border-indigo-500 bg-indigo-50" : "border-gray-200 hover:border-indigo-300"
               }`}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
+              onDragOver={handleDragOverModal}
+              onDragLeave={handleDragLeaveModal}
+              onDrop={handleDropModal}
             >
-              <input type="file" id="file-upload" multiple onChange={handleFileInputChange} className="hidden" />
+              <input type="file" id="file-upload" multiple onChange={handleFileInputChangeModal} className="hidden" />
               <div className="mb-4">
                 <FiUpload className="mx-auto text-4xl text-gray-400" />
               </div>
@@ -556,17 +594,7 @@ const Projects = () => {
             )}
 
             {/* Notes */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Notes (Optional)</label>
-              <textarea
-                value={uploadNotes}
-                onChange={(e) => setUploadNotes(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                rows="3"
-                placeholder="Add notes for this upload..."
-              />
-            </div>
-
+            
             {/* Actions */}
             <div className="flex gap-2">
               <button
@@ -627,46 +655,45 @@ const Projects = () => {
         </div>
       )}
 
-      {/* Details Modal */}
+      {/* Details Modal (for ProjectList Info button) */}
       {showDetailsModal && (
-        <div className="fixed inset-0  bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             className="bg-white rounded-xl p-4 w-full max-w-md shadow-xl md:rounded-2xl md:p-6"
             ref={modalRef}
           >
-            <h3 className="text-lg font-semibold mb-3 md:mb-4">{projectDetails?.name} Details</h3>
+            <h3 className="text-lg font-semibold mb-3 md:mb-4">{currentProjectInfo?.name} Details</h3>
             <div className="space-y-2 text-sm md:text-base">
               <div>
-                <span className="font-medium">Description:</span> {projectDetails?.details}
+                <span className="font-medium">Description:</span> {currentProjectInfo?.details}
               </div>
               <div className="flex items-center gap-2">
                 <Phone size={16} className="text-indigo-500" />
-                <span className="font-medium">Phone:</span> {projectDetails?.phoneNumber}
+                <span className="font-medium">Phone:</span> {currentProjectInfo?.phoneNumber}
               </div>
               <div>
-                <span className="font-medium">Created by:</span>{" "}
-                {projectDetails?.createdByType === "admin" ? "Admin" : projectDetails?.createdBy.username}
+                <span className="font-medium">Created by:</span> {currentProjectInfo?.createdBy}
               </div>
               <div>
-                <span className="font-medium">Created:</span> {formatDate(projectDetails?.createdAt)}
+                <span className="font-medium">Created:</span> {currentProjectInfo?.createdAt}
               </div>
               <div>
                 <span className="font-medium">Type:</span>{" "}
                 <span
                   className={`px-2 py-0.5 rounded-full text-xs ${
-                    projectDetails?.type === "public"
+                    currentProjectInfo?.type === "public"
                       ? "bg-green-100 text-green-800"
-                      : projectDetails?.type === "auth"
+                      : currentProjectInfo?.type === "auth"
                         ? "bg-yellow-100 text-yellow-800"
                         : "bg-red-100 text-red-800"
                   }`}
                 >
-                  {projectDetails?.type.toUpperCase()}
+                  {currentProjectInfo?.type?.toUpperCase()}
                 </span>
               </div>
-              {projectDetails?.shareLink && (
+              {currentProjectInfo?.shareLink && (
                 <div>
                   <span className="font-medium">Status:</span>{" "}
                   <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs">Shared</span>
@@ -676,11 +703,11 @@ const Projects = () => {
                 <div className="font-medium">Statistics:</div>
                 <div className="grid grid-cols-2 gap-2 mt-2">
                   <div className="bg-gray-50 p-2 rounded-lg">
-                    <div className="font-bold">{totalFiles}</div>
+                    <div className="font-bold">{currentProjectInfo?.totalFiles || 0}</div>
                     <div className="text-xs text-gray-600">Total Files</div>
                   </div>
                   <div className="bg-gray-50 p-2 rounded-lg">
-                    <div className="font-bold">{formatFileSize(totalSize)}</div>
+                    <div className="font-bold">{formatFileSize(currentProjectInfo?.totalSize || 0)}</div>
                     <div className="text-xs text-gray-600">Total Size</div>
                   </div>
                 </div>
@@ -701,7 +728,9 @@ const Projects = () => {
       {/* Other Modals */}
       {showForm && <ProjectForm project={editingProject} onClose={handleFormClose} onSuccess={handleFormSuccess} />}
 
-      {showShareModal && (
+     
+
+      {showInfoModal && (
         <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -709,146 +738,63 @@ const Projects = () => {
             className="bg-white rounded-xl p-4 w-full max-w-md shadow-xl md:rounded-2xl md:p-6"
             ref={modalRef}
           >
-            <h3 className="text-lg font-semibold mb-3 md:mb-4">Share Project</h3>
-            <p className="text-xs md:text-sm text-gray-600 mb-3 md:mb-4">
-              Share this link to allow others to upload files to your project.
-              <br />
-              <strong>Expires on:</strong> {shareExpiry}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-2 mb-4">
-              <input
-                type="text"
-                value={shareUrl}
-                readOnly
-                className="flex-1 p-2 border border-gray-300 rounded-lg text-xs md:text-sm bg-gray-50"
-              />
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={copyToClipboard}
-                className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-4 py-2 rounded-lg hover:from-indigo-600 hover:to-purple-600 text-xs md:text-sm font-medium"
-              >
-                Copy
-              </motion.button>
-            </div>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setShowShareModal(false)}
-              className="w-full bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600 font-medium text-sm"
-            >
-              Close
-            </motion.button>
-          </motion.div>
-        </div>
-      )}
-
-      {showInfoModal && (
-        <div className="fixed inset-0  bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-xl p-4 w-full max-w-md shadow-xl md:rounded-2xl md:p-6"
-            ref={modalRef}
-          >
-            <h3 className="text-lg font-semibold mb-3 md:mb-4">Project Information</h3>
+            <h3 className="text-lg font-semibold mb-3 md:mb-4">{currentProjectInfo?.name} Details</h3>
             <div className="space-y-2 text-sm md:text-base">
+              <div>
+                <span className="font-medium">Description:</span> {currentProjectInfo?.details}
+              </div>
+              <div className="flex items-center gap-2">
+                <Phone size={16} className="text-indigo-500" />
+                <span className="font-medium">Phone:</span> {currentProjectInfo?.phoneNumber}
+              </div>
               <div>
                 <span className="font-medium">Created by:</span> {currentProjectInfo?.createdBy}
               </div>
               <div>
-                <span className="font-medium">Created on:</span> {currentProjectInfo?.createdAt}
+                <span className="font-medium">Created:</span> {currentProjectInfo?.createdAt}
+              </div>
+              <div>
+                <span className="font-medium">Type:</span>{" "}
+                <span
+                  className={`px-2 py-0.5 rounded-full text-xs ${
+                    currentProjectInfo?.type === "public"
+                      ? "bg-green-100 text-green-800"
+                      : currentProjectInfo?.type === "auth"
+                        ? "bg-yellow-100 text-yellow-800"
+                        : "bg-red-100 text-red-800"
+                  }`}
+                >
+                  {currentProjectInfo?.type?.toUpperCase()}
+                </span>
+              </div>
+              {currentProjectInfo?.shareLink && (
+                <div>
+                  <span className="font-medium">Status:</span>{" "}
+                  <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs">Shared</span>
+                </div>
+              )}
+              <div className="pt-2 mt-2 border-t border-gray-200">
+                <div className="font-medium">Statistics:</div>
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  <div className="bg-gray-50 p-2 rounded-lg">
+                    <div className="font-bold">{currentProjectInfo?.totalFiles || 0}</div>
+                    <div className="text-xs text-gray-600">Total Files</div>
+                  </div>
+                  <div className="bg-gray-50 p-2 rounded-lg">
+                    <div className="font-bold">{formatFileSize(currentProjectInfo?.totalSize || 0)}</div>
+                    <div className="text-xs text-gray-600">Total Size</div>
+                  </div>
+                </div>
               </div>
             </div>
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setShowInfoModal(false)}
-              className="w-full mt-4 md:mt-6 bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600 font-medium text-sm"
+              className="w-full mt-4 md:mt-6 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 font-medium text-sm"
             >
               Close
             </motion.button>
-          </motion.div>
-        </div>
-      )}
-
-      {showImageDownloadModal && (
-        <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-xl p-4 w-full max-w-md shadow-xl md:rounded-2xl md:p-6"
-            ref={modalRef}
-          >
-            <h3 className="text-lg font-semibold mb-3 md:mb-4">Download Images</h3>
-            <p className="text-xs md:text-sm text-gray-600 mb-3 md:mb-4">
-              You have selected {getSelectedImages().length} image(s). Choose the format for images:
-            </p>
-            <div className="space-y-2 mb-4 md:mb-6">
-              <label className="flex items-center text-sm">
-                <input
-                  type="radio"
-                  name="imageFormat"
-                  value="original"
-                  checked={selectedImageFormat === "original"}
-                  onChange={(e) => setSelectedImageFormat(e.target.value)}
-                  className="mr-2 text-indigo-600 focus:ring-indigo-500"
-                />
-                Original Format
-              </label>
-              <label className="flex items-center text-sm">
-                <input
-                  type="radio"
-                  name="imageFormat"
-                  value="jpg"
-                  checked={selectedImageFormat === "jpg"}
-                  onChange={(e) => setSelectedImageFormat(e.target.value)}
-                  className="mr-2 text-indigo-600 focus:ring-indigo-500"
-                />
-                JPG
-              </label>
-              <label className="flex items-center text-sm">
-                <input
-                  type="radio"
-                  name="imageFormat"
-                  value="png"
-                  checked={selectedImageFormat === "png"}
-                  onChange={(e) => setSelectedImageFormat(e.target.value)}
-                  className="mr-2 text-indigo-600 focus:ring-indigo-500"
-                />
-                PNG
-              </label>
-              <label className="flex items-center text-sm">
-                <input
-                  type="radio"
-                  name="imageFormat"
-                  value="webp"
-                  checked={selectedImageFormat === "webp"}
-                  onChange={(e) => setSelectedImageFormat(e.target.value)}
-                  className="mr-2 text-indigo-600 focus:ring-indigo-500"
-                />
-                WebP
-              </label>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={downloadImages}
-                disabled={downloadingImages}
-                className="flex-1 bg-gradient-to-r from-indigo-500 to-purple-500 text-white py-2 rounded-lg hover:from-indigo-600 hover:to-purple-600 disabled:opacity-50 font-medium text-sm"
-              >
-                {downloadingImages ? "Downloading..." : "Download All"}
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setShowImageDownloadModal(false)}
-                className="flex-1 bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600 font-medium text-sm"
-              >
-                Cancel
-              </motion.button>
-            </div>
           </motion.div>
         </div>
       )}

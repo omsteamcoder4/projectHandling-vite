@@ -1,7 +1,7 @@
 "use client"
 import { useState, useEffect, useRef } from "react"
-import { FiEdit2, FiTrash2, FiShare2, FiMoreVertical, FiInfo } from "react-icons/fi"
-import { Phone, Globe, Lock, Ban, Edit } from "lucide-react"
+import { FiEdit2, FiTrash2, FiShare2, FiMoreVertical, FiInfo, FiSearch, FiFilter } from "react-icons/fi"
+import { Phone, Globe, Lock, Ban, Plus } from "lucide-react"
 
 const ProjectList = ({
   projects,
@@ -21,10 +21,6 @@ const ProjectList = ({
 }) => {
   const [showActionMenu, setShowActionMenu] = useState(null)
   const actionMenuRefs = useRef({})
-
-  const handleWheel = (e) => {
-    e.stopPropagation()
-  }
 
   const getTypeIcon = (type) => {
     switch (type) {
@@ -75,39 +71,41 @@ const ProjectList = ({
   })
 
   return (
-    <div
-      className="w-full lg:w-[115%] border-r border-gray-200 lg:pr-4 flex flex-col h-screen overflow-hidden"
-      onWheel={handleWheel}
-    >
-      {/* Fixed Header Section */}
-      <div className="fixed top-0 left-0 right-0 lg:right-auto lg:w-[calc(30%-1rem)] bg-white pt-2 pb-2 border-b border-gray-200 z-[100]">
-        <div className="grid grid-cols-3 items-center mb-2 gap-4 p-2">
+    <div className="flex flex-col h-full bg-white">
+      {/* Header Section - Fixed */}
+      <div className="flex-shrink-0 bg-white border-b border-gray-200 p-4">
+        {/* Title and Add Button */}
+        <div className="flex items-center justify-between mb-4">
           <div></div>
-          <div>
-            <h2 className="text-xl font-bold text-gray-900">Projects</h2>
-          </div>
-          <div className="flex justify-end mr-2">
-            <button onClick={() => setShowForm(true)} className="p-1 hover:bg-gray-100 rounded">
-              <Edit />
-            </button>
-          </div>
+          <h2 className="text-xl font-bold text-gray-900">Projects</h2>
+          <button
+            onClick={() => setShowForm(true)}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            title="Add Project"
+          >
+            <Plus size={20} className="text-indigo-600" />
+          </button>
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center gap-3 p-2 bg-white">
-          <div className="w-full">
+        {/* Search and Filter */}
+        <div className="flex gap-3">
+          <div className="relative flex-1">
+            <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
             <input
               type="text"
               placeholder="Search projects..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full h-8 px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
             />
           </div>
-          <div className="w-full sm:w-auto">
+
+          <div className="relative flex-1">
+            <FiFilter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="w-full sm:w-auto min-w-[140px] h-8 px-3 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 appearance-none bg-white"
             >
               <option value="all">All Types</option>
               <option value="public">Public</option>
@@ -118,15 +116,22 @@ const ProjectList = ({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto mt-32 lg:mt-36" onWheel={handleWheel}>
+      {/* Projects List - Scrollable */}
+      <div className="flex-1 overflow-y-auto">
         {filteredProjects.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-gray-500 text-lg">
-              {projects.length === 0 ? "No projects yet. Create your first project!" : "No projects match your search."}
+          <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <span className="text-2xl">📁</span>
+            </div>
+            <div className="text-gray-500 text-lg mb-2">
+              {projects.length === 0 ? "No projects yet" : "No projects match your search"}
+            </div>
+            <div className="text-gray-400 text-sm">
+              {projects.length === 0 ? "Create your first project!" : "Try adjusting your search or filter"}
             </div>
           </div>
         ) : (
-          <div className="space-y-2 p-2">
+          <div className="p-2">
             {filteredProjects.map((project) => {
               const canEdit = user.role === "admin" || project.createdBy?._id === user.id
               const canDelete = user.role === "admin" || project.createdBy?._id === user.id
@@ -135,99 +140,103 @@ const ProjectList = ({
               return (
                 <div
                   key={project._id}
-                  className={`bg-white border-b border-gray-400 hover:bg-gray-100 duration-200 cursor-pointer rounded-md ${selectedProject === project._id ? "bg-blue-100" : ""}`}
+                  className={`
+                    relative bg-white border rounded-lg hover:shadow-md transition-all duration-200 cursor-pointer
+                    ${selectedProject === project._id
+                      ? "border-indigo-500 bg-indigo-50 shadow-md"
+                      : "border-gray-200 hover:border-gray-300"
+                    }
+                  `}
                   onClick={() => onProjectClick(project)}
                 >
-                  <div className="p-3">
-                    <div className="flex justify-between items-center">
-                      {/* Left side content */}
+                  <div className="p-4">
+                    <div className="flex items-center justify-between">
+                      {/* Project Info */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-2 mb-2">
                           <h3 className="text-lg font-semibold text-gray-900 truncate">{project.name}</h3>
                           {getTypeIcon(project.type)}
                         </div>
-                        <div className="flex items-center text-sm mt-1 text-gray-500">
-                          <Phone size={16} className="mr-1 text-blue-400" />
+
+                        <div className="flex items-center text-sm text-gray-600 mb-2">
+                          <Phone size={14} className="mr-2 text-indigo-500 flex-shrink-0" />
                           <span className="truncate">{project.phoneNumber}</span>
                         </div>
+
+                        {project.details && <p className="text-sm text-gray-500 line-clamp-2">{project.details}</p>}
                       </div>
 
-                      {/* Right side menu button - vertically centered */}
-                      <div
-                        className="relative flex items-center ml-2"
-                        ref={(el) => (actionMenuRefs.current[project._id] = el)}
-                      >
+                      {/* Action Menu */}
+                      <div className="flex items-center" ref={(el) => (actionMenuRefs.current[project._id] = el)}>
                         <button
                           onClick={(e) => toggleActionMenu(project._id, e)}
-                          className="p-1 rounded-full hover:bg-gray-100"
+                          className="p-2 rounded-full hover:bg-gray-100 transition-colors"
                         >
-                          <FiMoreVertical />
+                          <FiMoreVertical size={16} />
                         </button>
+
                         {showActionMenu === project._id && (
-                          <div
-                            className="fixed left-95 mt-2 w-48 bg-white rounded-md shadow-lg z-[1000] py-1 border border-gray-100"
-                            style={{
-                              position: "fixed",
-                              zIndex: 1000,
-                            }}
-                          >
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                onInfo(project)
-                                setShowActionMenu(null)
-                              }}
-                              className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full text-left"
-                            >
-                              <FiInfo className="mr-2 text-gray-500" />
-                              Info
-                            </button>
-                            {canEdit && (
+                          <div className="absolute right-10 top-0 z-50">
+                            <div className="relative">
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation()
-                                  onEdit(project)
+                                  onInfo(project)
                                   setShowActionMenu(null)
                                 }}
-                                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 w-full text-left"
+                                className="absolute right-0 top-0 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-200 transform hover:scale-105 animate-fade-in"
+                                style={{ animationDelay: '0ms' }}
                               >
-                                <FiEdit2 className="mr-2 text-blue-500" />
-                                Edit
+                                <FiInfo className="text-gray-500" size={16} />
                               </button>
-                            )}
-                            {canDelete && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  onDelete(project._id)
-                                  setShowActionMenu(null)
-                                }}
-                                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-red-50 w-full text-left"
-                              >
-                                <FiTrash2 className="mr-2 text-red-500" />
-                                Delete
-                              </button>
-                            )}
-                            {canShare && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation()
-                                  onShare(project._id)
-                                  setShowActionMenu(null)
-                                }}
-                                disabled={shareLoading}
-                                className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-green-50 w-full text-left"
-                              >
-                                {shareLoading ? (
-                                  <span className="animate-pulse text-gray-400">Loading...</span>
-                                ) : (
-                                  <>
-                                    <FiShare2 className="mr-2 text-green-500" />
-                                    Share
-                                  </>
-                                )}
-                              </button>
-                            )}
+
+                              {canEdit && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    onEdit(project)
+                                    setShowActionMenu(null)
+                                  }}
+                                  className="absolute right-5 top-5 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 rounded-lg transition-all duration-200 transform hover:scale-105 animate-fade-in"
+                                  style={{ animationDelay: '100ms' }}
+                                >
+                                  <FiEdit2 className="text-blue-500" size={16} />
+                                </button>
+                              )}
+
+                              {canShare && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    onShare(project._id)
+                                    setShowActionMenu(null)
+                                  }}
+                                  disabled={shareLoading}
+                                  className="absolute right-0 top-15 px-4 py-2 text-sm text-gray-700 hover:bg-green-50 rounded-lg transition-all duration-200 transform hover:scale-105 animate-fade-in disabled:opacity-50"
+                                  style={{ animationDelay: '200ms' }}
+                                >
+                                  {shareLoading ? (
+                                    <span className="animate-pulse text-gray-400">Generating link...</span>
+                                  ) : (
+                                    <FiShare2 className="text-green-500" size={16} />
+                                  )}
+                                </button>
+                              )}
+
+                              {canDelete && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    onDelete(project._id)
+                                    setShowActionMenu(null)
+                                  }}
+                                  className="absolute right-5 top-10 px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 transform hover:scale-105 animate-fade-in"
+                                  style={{ animationDelay: '300ms' }}
+                                >
+                                  <FiTrash2 className="text-red-500" size={16} />
+                                </button>
+                              )}
+                            </div>
                           </div>
                         )}
                       </div>

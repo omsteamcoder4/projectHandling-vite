@@ -9,7 +9,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { FiX, FiUpload, FiArrowLeft } from "react-icons/fi"
 import { Phone } from "lucide-react"
 import { ToastContainer, toast } from "react-toastify"
-import 'react-toastify/dist/ReactToastify.css'
+import "react-toastify/dist/ReactToastify.css"
 
 const Projects = () => {
   // Project List State
@@ -85,7 +85,9 @@ const Projects = () => {
 
   const updateSessionNotes = async (sessionId, notes) => {
     try {
-      await axios.put(`${import.meta.env.VITE_API_BASE_URL}/projects/${selectedProject}/sessions/${sessionId}`, { notes })
+      await axios.put(`${import.meta.env.VITE_API_BASE_URL}/projects/${selectedProject}/sessions/${sessionId}`, {
+        notes,
+      })
       fetchProjectDetails(selectedProject)
     } catch (e) {
       toast.error("Failed to update notes")
@@ -112,6 +114,13 @@ const Projects = () => {
       setSelectedProject(projectId)
       setShowMobileList(false)
       await fetchProjectDetails(projectId)
+
+      // Scroll to top of details on mobile
+      if (window.innerWidth < 1024) {
+        setTimeout(() => {
+          window.scrollTo({ top: 0, behavior: "smooth" })
+        }, 100)
+      }
     }
   }
 
@@ -119,6 +128,7 @@ const Projects = () => {
     setShowMobileList(true)
     setSelectedProject(null)
     setProjectDetails(null)
+    setSelectedFiles([])
   }
 
   const getAllFiles = () => {
@@ -183,8 +193,8 @@ const Projects = () => {
         </div>,
         {
           autoClose: false,
-          closeButton: false
-        }
+          closeButton: false,
+        },
       )
     })
 
@@ -359,8 +369,8 @@ const Projects = () => {
         </div>,
         {
           autoClose: false,
-          closeButton: false
-        }
+          closeButton: false,
+        },
       )
     })
 
@@ -428,7 +438,7 @@ const Projects = () => {
     setShowInfoModal(true)
   }
 
-  const copyToClipboard = async () => {
+  const copyToClipboard = async (shareUrl) => {
     try {
       await navigator.clipboard.writeText(shareUrl)
       toast.success("Share link copied to clipboard!")
@@ -463,10 +473,9 @@ const Projects = () => {
 
   const onEditFileName = async (fileId, newName) => {
     try {
-      await axios.put(
-        `${import.meta.env.VITE_API_BASE_URL}/projects/${selectedProject}/files/${fileId}`,
-        { displayName: newName }
-      )
+      await axios.put(`${import.meta.env.VITE_API_BASE_URL}/projects/${selectedProject}/files/${fileId}`, {
+        displayName: newName,
+      })
       console.log("✅ File name updated successfully")
     } catch (error) {
       console.error("❌ Failed to rename file:", error)
@@ -506,73 +515,92 @@ const Projects = () => {
   const canManageFiles = user?.role === "admin" || projectDetails?.createdBy._id === user?.id
 
   return (
-    <div className="h-full flex flex-col lg:flex-row overflow-hidden bg-white">
+    <div className="min-h-screen bg-white">
       <ToastContainer position="top-right" autoClose={5000} />
 
-      {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-15 right-0 bg-white z-50 border-b border-gray-200 p-3 flex items-center">
-        {!showMobileList ? (
-          <button
-            onClick={handleBackToList}
-            className="mr-3 p-1 rounded-full hover:bg-gray-100"
-          >
-            <FiArrowLeft size={20} />
-          </button>
-        ) : null}
-        <h2 className="text-xl font-bold text-gray-900">
+      {/* Mobile Header - Fixed at top */}
+      <div className="lg:hidden fixed top-0 left-10 right-0 bg-white z-[49] border-b border-gray-200 px-4 py-3 flex justify-between h-16.5">
+       <h2 className="text-xl font-bold text-gray-900 ml-10">
           {showMobileList ? "Projects" : projectDetails?.name || "Project Details"}
         </h2>
+         {!showMobileList && (
+          <button onClick={handleBackToList} className="mr-3 p-2 rounded-full hover:bg-gray-100 transition-colors">
+            <FiArrowLeft size={20} />
+          </button>
+        )}
+        
       </div>
 
-      {/* Left Panel - Project List (shown on mobile when showMobileList is true) */}
-      <div className={`lg:w-1/3 xl:w-1/4 2xl:w-1/5 ${showMobileList ? 'block' : 'hidden'} lg:block`}>
-        <ProjectList
-          projects={projects}
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          filterType={filterType}
-          setFilterType={setFilterType}
-          selectedProject={selectedProject}
-          onProjectClick={handleProjectClick}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          onShare={handleShare}
-          onInfo={handleInfo}
-          shareLoading={shareLoading}
-          user={user}
-          setShowForm={setShowForm}
-        />
-      </div>
+      {/* Main Content Container */}
+      <div className="flex h-screen">
+        {/* Left Panel - Project List */}
+        <div
+          className={`
+          ${showMobileList ? "block" : "hidden"} lg:block
+          w-full lg:w-[30%] 
+          ${showMobileList ? "pt-16" : ""} lg:pt-0
+          border-r border-gray-200 
+          bg-white
+          
+        `}
+        >
+          <ProjectList
+            projects={projects}
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            filterType={filterType}
+            setFilterType={setFilterType}
+            selectedProject={selectedProject}
+            onProjectClick={handleProjectClick}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onShare={handleShare}
+            onInfo={handleInfo}
+            shareLoading={shareLoading}
+            user={user}
+            setShowForm={setShowForm}
+          />
+        </div>
 
-      {/* Right Panel - Project Details (shown on mobile when showMobileList is false) */}
-      <div className={`flex-1 min-w-0 ${!showMobileList ? 'block' : 'hidden'} lg:block`}>        <ProjectDetails
-        onEditFileName={onEditFileName}
-        projectDetails={projectDetails}
-        selectedProject={selectedProject}
-        canManageFiles={canManageFiles}
-        user={user}
-        selectedFiles={selectedFiles}
-        setSelectedFiles={setSelectedFiles}
-        onUploadToSession={handleUploadToSession}
-        onDeleteSession={handleDeleteSession}
-        onFileSelect={handleFileSelect}
-        onSelectAll={handleSelectAll}
-        onBulkDelete={handleBulkDelete}
-        onDownloadFile={downloadFile}
-        onDeleteFile={deleteUploadedFile}
-        editingFileName={editingFileName}
-        setEditingFileName={setEditingFileName}
-        newFileName={newFileName}
-        setNewFileName={setNewFileName}
-        setShowDetailsModal={setShowDetailsModal}
-        fetchProjectDetails={fetchProjectDetails}
-        onEditSessionNotes={updateSessionNotes}
-      />
+        {/* Right Panel - Project Details */}
+        <div
+          className={`
+          ${!showMobileList ? "block" : "hidden"} lg:block
+          w-full lg:w-[70%]
+          ${!showMobileList ? "pt-16" : ""} lg:pt-0
+          bg-white
+          overflow-hidden
+        `}
+        >
+          <ProjectDetails
+            onEditFileName={onEditFileName}
+            projectDetails={projectDetails}
+            selectedProject={selectedProject}
+            canManageFiles={canManageFiles}
+            user={user}
+            selectedFiles={selectedFiles}
+            setSelectedFiles={setSelectedFiles}
+            onUploadToSession={handleUploadToSession}
+            onDeleteSession={handleDeleteSession}
+            onFileSelect={handleFileSelect}
+            onSelectAll={handleSelectAll}
+            onBulkDelete={handleBulkDelete}
+            onDownloadFile={downloadFile}
+            onDeleteFile={deleteUploadedFile}
+            editingFileName={editingFileName}
+            setEditingFileName={setEditingFileName}
+            newFileName={newFileName}
+            setNewFileName={setNewFileName}
+            setShowDetailsModal={setShowDetailsModal}
+            fetchProjectDetails={fetchProjectDetails}
+            onEditSessionNotes={updateSessionNotes}
+          />
+        </div>
       </div>
 
       {/* Upload Modal (for adding to existing sessions) */}
       {showUploadModal && (
-        <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="lg:hidden fixed top-0 left-0 right-0 bg-white z-[40] ...">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -665,7 +693,7 @@ const Projects = () => {
 
       {/* Delete Session Modal */}
       {showDeleteSessionModal && (
-        <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/60 bg-opacity-50 flex items-center justify-center z-50 p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -700,7 +728,7 @@ const Projects = () => {
 
       {/* Details Modal (for ProjectList Info button) */}
       {showDetailsModal && (
-        <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/60 bg-opacity-50 flex items-center justify-center z-50 p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -726,10 +754,10 @@ const Projects = () => {
                 <span className="font-medium">Type:</span>{" "}
                 <span
                   className={`px-2 py-0.5 rounded-full text-xs ${currentProjectInfo?.type === "public"
-                    ? "bg-green-100 text-green-800"
-                    : currentProjectInfo?.type === "auth"
-                      ? "bg-yellow-100 text-yellow-800"
-                      : "bg-red-100 text-red-800"
+                      ? "bg-green-100 text-green-800"
+                      : currentProjectInfo?.type === "auth"
+                        ? "bg-yellow-100 text-yellow-800"
+                        : "bg-red-100 text-red-800"
                     }`}
                 >
                   {currentProjectInfo?.type?.toUpperCase()}
@@ -771,7 +799,7 @@ const Projects = () => {
       {showForm && <ProjectForm project={editingProject} onClose={handleFormClose} onSuccess={handleFormSuccess} />}
 
       {showInfoModal && (
-        <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/60 bg-opacity-50 flex items-center justify-center z-50 p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -797,10 +825,10 @@ const Projects = () => {
                 <span className="font-medium">Type:</span>{" "}
                 <span
                   className={`px-2 py-0.5 rounded-full text-xs ${currentProjectInfo?.type === "public"
-                    ? "bg-green-100 text-green-800"
-                    : currentProjectInfo?.type === "auth"
-                      ? "bg-yellow-100 text-yellow-800"
-                      : "bg-red-100 text-red-800"
+                      ? "bg-green-100 text-green-800"
+                      : currentProjectInfo?.type === "auth"
+                        ? "bg-yellow-100 text-yellow-800"
+                        : "bg-red-100 text-red-800"
                     }`}
                 >
                   {currentProjectInfo?.type?.toUpperCase()}

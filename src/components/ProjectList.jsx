@@ -63,9 +63,10 @@ const ProjectList = ({
   }
 
   const filteredProjects = projects.filter((project) => {
+    const projectDetails = project.details || ""
     const matchesSearch =
       project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      project.details.toLowerCase().includes(searchTerm.toLowerCase())
+      projectDetails.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesFilter = filterType === "all" || project.type === filterType
     return matchesSearch && matchesFilter
   })
@@ -73,9 +74,9 @@ const ProjectList = ({
   return (
     <div className="flex flex-col h-full bg-white">
       {/* Header Section - Fixed */}
-      <div className="flex-shrink-0 bg-white border-b border-gray-200 p-4">
+      <div className="flex-shrink-0 bg-white border-b border-gray-200 p-0 lg:p-4 sm:p-0">
         {/* Title and Add Button */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="lg:flex items-center justify-between mb-1 lg:mb-4 sm:mb-1 sm:flex hidden">
           <div></div>
           <h2 className="text-xl font-bold text-gray-900">Projects</h2>
           <button
@@ -88,7 +89,7 @@ const ProjectList = ({
         </div>
 
         {/* Search and Filter */}
-        <div className="flex gap-3">
+        <div className="flex gap-3 p-2">
           <div className="relative flex-1">
             <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
             <input
@@ -149,11 +150,11 @@ const ProjectList = ({
                   `}
                   onClick={() => onProjectClick(project)}
                 >
-                  <div className="p-4">
+                  <div className="p-1 lg:p-2 sm:p-1">
                     <div className="flex items-center justify-between">
                       {/* Project Info */}
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-2">
+                        <div className="flex items-center gap-2 mb-0 lg:mb-2 sm:mb-0">
                           <h3 className="text-lg font-semibold text-gray-900 truncate">{project.name}</h3>
                           {getTypeIcon(project.type)}
                         </div>

@@ -7,9 +7,10 @@ import ProjectDetails from "../components/ProjectDetails"
 import { useAuth } from "../context/AuthContex"
 import { motion, AnimatePresence } from "framer-motion"
 import { FiX, FiUpload, FiArrowLeft } from "react-icons/fi"
-import { Phone } from "lucide-react"
+import { Phone, Plus } from "lucide-react"
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
+
 
 const Projects = () => {
   // Project List State
@@ -304,10 +305,53 @@ const Projects = () => {
     setUploadFiles((prev) => prev.filter((_, i) => i !== index))
   }
 
-  const handleUploadToSession = (sessionId) => {
+const handleUploadToSession = (sessionId) => {
+  if (window.innerWidth >= 1024) {
+    // lg screen: trigger file input directly
+    const fileInput = document.createElement("input")
+    fileInput.type = "file"
+    fileInput.multiple = true
+    fileInput.onchange = (e) => {
+      const selected = Array.from(e.target.files)
+      if (selected.length > 0) {
+        uploadFilesDirectToSession(sessionId, selected)
+      }
+    }
+    fileInput.click()
+  } else {
+    // mobile: show modal
     setUploadToSessionId(sessionId)
     setShowUploadModal(true)
   }
+}
+
+
+const uploadFilesDirectToSession = async (sessionId, files) => {
+  if (!files || files.length === 0 || !selectedProject) return
+
+  setUploading(true)
+  try {
+    const formData = new FormData()
+    files.forEach((file) => {
+      formData.append("files", file)
+    })
+    formData.append("sessionId", sessionId)
+    formData.append("notes", "")
+
+    await axios.post(`${import.meta.env.VITE_API_BASE_URL}/projects/${selectedProject}/upload`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    })
+
+    await fetchProjectDetails(selectedProject)
+    toast.success("Files uploaded successfully!")
+  } catch (error) {
+    console.error("Failed to upload files:", error)
+    toast.error("Failed to upload files")
+  } finally {
+    setUploading(false)
+  }
+}
+
 
   const handleDeleteSession = (sessionId) => {
     setSessionToDelete(sessionId)
@@ -519,12 +563,19 @@ const Projects = () => {
       <ToastContainer position="top-right" autoClose={5000} />
 
       {/* Mobile Header - Fixed at top */}
-      <div className="lg:hidden fixed top-0 left-10 right-0 bg-white z-[49] border-b border-gray-200 px-4 py-3 flex justify-between h-16.5">
-       <h2 className="text-xl font-bold text-gray-900 ml-10">
-          {showMobileList ? "Projects" : projectDetails?.name || "Project Details"}
+      <div className="lg:hidden fixed top-0 left-0 right-0 bg-white z-[49] border-b border-gray-200 px-4 py-3 h-16.5">
+       <h2 className="text-xl font-bold text-gray-900 text-center">
+          {showMobileList ? <> <div className="flex justify-between align-baseline"><div></div><p>Projects</p><button
+            onClick={() => setShowForm(true)}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            title="Add Project"
+          >
+            <Plus size={20} className="text-indigo-600" />
+          </button></div>  </> : projectDetails?.name || "Project Details"}
+          
         </h2>
          {!showMobileList && (
-          <button onClick={handleBackToList} className="mr-3 p-2 rounded-full hover:bg-gray-100 transition-colors">
+          <button onClick={handleBackToList} className="mr-3 p-2 rounded-full hover:bg-gray-100 transition-colors absolute top-3 right-0">
             <FiArrowLeft size={20} />
           </button>
         )}
@@ -580,6 +631,7 @@ const Projects = () => {
             user={user}
             selectedFiles={selectedFiles}
             setSelectedFiles={setSelectedFiles}
+            uploadFilesDirectToSession={uploadFilesDirectToSession}
             onUploadToSession={handleUploadToSession}
             onDeleteSession={handleDeleteSession}
             onFileSelect={handleFileSelect}

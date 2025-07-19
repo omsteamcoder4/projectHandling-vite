@@ -16,6 +16,7 @@ const ProjectDetails = ({
   onDeleteSession,
   onFileSelect,
   onDownloadFile,
+  uploadFilesDirectToSession,
   onDeleteFile,
   onEditFileName,
   setNewFileName,
@@ -23,6 +24,8 @@ const ProjectDetails = ({
   setShowDetailsModal,
   fetchProjectDetails,
   onEditSessionNotes,
+  handleUploadToSession,
+  editingFileName,
 }) => {
   const [showImageDownloadModal, setShowImageDownloadModal] = useState(false)
   const [selectedImageFormat, setSelectedImageFormat] = useState("original")
@@ -255,18 +258,30 @@ const ProjectDetails = ({
       setDownloadingImages(false)
     }
   }
+  const getFileNameParts = (fileName) => {
+    const lastDotIndex = fileName.lastIndexOf(".")
+    if (lastDotIndex === -1) return { baseName: fileName, extension: "" }
+    return {
+      baseName: fileName.slice(0, lastDotIndex),
+      extension: fileName.slice(lastDotIndex), // includes dot, e.g., '.jpg'
+    }
+  }
 
   const handleFileNameEdit = async (file) => {
-    const newName = (tempNames[file._id] || "").trim()
-    const currName = file.displayName
+    const newBaseName = (tempNames[file._id] || "").trim()
+    const { baseName: originalBaseName, extension } = getFileNameParts(file.displayName)
 
-    if (!newName || newName === currName) {
+    if (!newBaseName || newBaseName === originalBaseName) {
+      setEditingFileId(null) // Exit editing if no change or empty
       return
     }
 
+    const fullNewName = newBaseName + extension // Reconstruct with original extension
+
     try {
-      await onEditFileName(file._id, newName)
+      await onEditFileName(file._id, fullNewName) // Pass the full new name to the prop
       await fetchProjectDetails(selectedProject)
+      toast.success("File name updated successfully!") // Add success toast
     } catch (err) {
       console.error("Rename failed", err)
       toast.error("Failed to update file name")
@@ -276,7 +291,8 @@ const ProjectDetails = ({
   const [tempNames, setTempNames] = useState({})
   const startEditing = (file) => {
     setEditingFileId(file._id)
-    setTempNames((p) => ({ ...p, [file._id]: file.displayName }))
+    const { baseName } = getFileNameParts(file.displayName)
+    setTempNames((p) => ({ ...p, [file._id]: baseName }))
   }
 
   const allFiles = getAllFiles()
@@ -297,7 +313,11 @@ const ProjectDetails = ({
   }
 
   return (
-    <div className="w-full h-full bg-gradient-to-br from-indigo-50 to-purple-50 overflow-hidden">
+    <div
+      className="w-full h-full bg-gradient-to-br from-indigo-50 to-purple-50 overflow-hidden"
+      onClick={() => setSelectedFiles([])}
+    >
+      {" "}
       <div className="h-full overflow-y-auto">
         <div className="max-w-7xl mx-auto p-4 lg:p-6">
           {/* Upload Area */}
@@ -306,10 +326,11 @@ const ProjectDetails = ({
               <motion.div
                 whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.99 }}
-                className={`border-2 border-dashed rounded-xl p-6 lg:p-8 text-center transition-all duration-300 cursor-pointer group ${isDragging
+                className={`border-2 border-dashed rounded-xl p-6 lg:p-8 text-center transition-all duration-300 cursor-pointer group ${
+                  isDragging
                     ? "border-indigo-500 bg-indigo-50"
                     : "border-indigo-300 hover:border-indigo-500 bg-white hover:bg-indigo-50"
-                  }`}
+                }`}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
@@ -386,10 +407,11 @@ const ProjectDetails = ({
                                 e.stopPropagation()
                                 handleSessionDownload(session)
                               }}
-                              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors font-medium text-sm ${selectedInSession.length > 0
+                              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors font-medium text-sm ${
+                                selectedInSession.length > 0
                                   ? "bg-blue-50 text-blue-600 hover:bg-blue-100"
                                   : "bg-green-50 text-green-600 hover:bg-green-100"
-                                }`}
+                              }`}
                             >
                               <FiDownload size={14} />
                               {selectedInSession.length > 0 ? "Download Selected" : "Download All"}
@@ -405,7 +427,6 @@ const ProjectDetails = ({
                                 className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-colors font-medium text-sm"
                               >
                                 <FiPlus size={14} />
-                                Add Files
                               </motion.button>
 
                               <motion.button
@@ -415,7 +436,6 @@ const ProjectDetails = ({
                                 className="flex items-center gap-2 px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition-colors font-medium text-sm"
                               >
                                 <FiTrash2 size={14} />
-                                Delete
                               </motion.button>
                             </>
                           )}
@@ -443,20 +463,20 @@ const ProjectDetails = ({
                                   setEditingNotes((prev) => ({ ...prev, [session.sessionId]: false }))
                                 }
                               }}
-                              className="w-full text-sm resize-none outline-none min-h-[60px] p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                              className="min-w-fit text-sm resize-none outline-none min-h-fit p-1 "
                               placeholder="Add notes about this session..."
                               autoFocus
                             />
                           ) : (
                             <div
-                              className="text-sm text-gray-700 whitespace-pre-line cursor-pointer hover:text-indigo-600 p-3 rounded-lg hover:bg-gray-50 transition-colors min-h-[60px] border border-transparent hover:border-gray-200"
+                              className="text-sm w-fit text-gray-700 whitespace-pre-line cursor-pointer min-h-fit border border-transparent"
                               onClick={() => startEditingNotes(session.sessionId, session.notes)}
                             >
                               {session.notes || "Click to add notes about this session..."}
                             </div>
                           )
                         ) : (
-                          <div className="text-sm text-gray-700 whitespace-pre-line p-3 min-h-[60px] bg-gray-50 rounded-lg">
+                          <div className="text-sm text-gray-700 whitespace-pre-line p-3 min-h-fit bg-gray-50 rounded-lg">
                             {session.notes || "No notes available"}
                           </div>
                         )}
@@ -471,10 +491,11 @@ const ProjectDetails = ({
                               initial={{ opacity: 0, scale: 0.9 }}
                               animate={{ opacity: 1, scale: 1 }}
                               whileHover={{ y: -2 }}
-                              className={`bg-gray-50 rounded-lg overflow-hidden relative group cursor-pointer transition-all ${selectedFiles.includes(file._id)
+                              className={`bg-gray-50 rounded-lg overflow-hidden relative group cursor-pointer transition-all ${
+                                selectedFiles.includes(file._id)
                                   ? "ring-2 ring-indigo-500 shadow-md"
                                   : "hover:shadow-md"
-                                }`}
+                              }`}
                               onClick={(e) => {
                                 if (!e.target.closest(".file-name") && !e.target.closest(".file-actions")) {
                                   e.stopPropagation()
@@ -502,7 +523,7 @@ const ProjectDetails = ({
                                 )}
 
                                 {/* Action Buttons */}
-                                <div className="absolute top-2 right-2 bg-black/60 bg-opacity-50 group-hover:opacity-100 transition-opacity flex gap-1 file-actions">
+                                {/* <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 file-actions">
                                   <motion.button
                                     whileHover={{ scale: 1.1 }}
                                     whileTap={{ scale: 0.9 }}
@@ -534,7 +555,40 @@ const ProjectDetails = ({
                                       <FiTrash2 size={12} />
                                     </motion.button>
                                   )}
-                                </div>
+                                </div> */}
+                                <div className={`absolute top-2 right-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex gap-1 file-actions`}>
+  <motion.button
+    whileHover={{ scale: 1.1 }}
+    whileTap={{ scale: 0.9 }}
+    onClick={(e) => {
+      e.stopPropagation()
+      if (file.mimetype?.startsWith("image/")) {
+        handleSingleImageDownload(file)
+      } else {
+        onDownloadFile(file._id, file.displayName)
+      }
+    }}
+    className="bg-white/90 backdrop-blur-sm text-green-500 hover:bg-green-50 p-1.5 rounded-full shadow-sm"
+    title="Download"
+  >
+    <FiDownload size={12} />
+  </motion.button>
+
+  {canManageFiles && (
+    <motion.button
+      whileHover={{ scale: 1.1 }}
+      whileTap={{ scale: 0.9 }}
+      onClick={(e) => {
+        e.stopPropagation()
+        onDeleteFile(file._id)
+      }}
+      className="bg-white/90 backdrop-blur-sm text-red-500 hover:bg-red-50 p-1.5 rounded-full shadow-sm"
+      title="Delete"
+    >
+      <FiTrash2 size={12} />
+    </motion.button>
+  )}
+</div>
                               </div>
 
                               {/* File Info */}
@@ -558,6 +612,9 @@ const ProjectDetails = ({
                                       }}
                                       className="flex-1 text-xs border-b border-gray-300 outline-none bg-transparent"
                                     />
+                                    <span className="text-xs text-gray-500">
+                                      {getFileNameParts(file.displayName).extension}
+                                    </span>
                                     <button
                                       onClick={async (e) => {
                                         e.stopPropagation()
@@ -572,8 +629,9 @@ const ProjectDetails = ({
                                 ) : (
                                   <p
                                     onClick={() => canManageFiles && startEditing(file)}
-                                    className={`text-xs font-medium text-gray-800 truncate leading-tight file-name ${canManageFiles ? "cursor-pointer hover:text-indigo-600" : ""
-                                      }`}
+                                    className={`text-xs font-medium text-gray-800 truncate leading-tight file-name ${
+                                      canManageFiles ? "cursor-pointer hover:text-indigo-600" : ""
+                                    }`}
                                     title={file.displayName}
                                   >
                                     {file.displayName}

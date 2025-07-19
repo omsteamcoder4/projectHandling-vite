@@ -1,5 +1,4 @@
 "use client"
-
 import { useState, useEffect } from "react"
 import axios from "axios"
 import { useAuth } from "../context/AuthContex"
@@ -56,11 +55,9 @@ const UserManagement = () => {
 
   const filterUsers = () => {
     let filtered = users.filter((user) => user.username.toLowerCase().includes(searchTerm.toLowerCase()))
-
     if (roleFilter !== "all") {
       filtered = filtered.filter((user) => user.role === roleFilter)
     }
-
     setFilteredUsers(filtered)
   }
 
@@ -148,34 +145,34 @@ const UserManagement = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 p-4 md:p-6">
+    <div className="bg-gradient-to-br from-indigo-50 to-purple-50 p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl shadow-xl p-6 mb-6 border border-gray-100"
+          className="bg-white rounded-2xl shadow-xl p-4 md:p-6 mb-6 border border-gray-100"
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
-                <FiUsers className="text-white text-xl" />
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center">
+                <FiUsers className="text-white text-lg md:text-xl" />
               </div>
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+                <h1 className="text-xl md:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
                   User Management
                 </h1>
-                <p className="text-gray-600 text-sm">Manage system users and permissions</p>
+                <p className="text-gray-600 text-xs md:text-sm">Manage system users and permissions</p>
               </div>
             </div>
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setShowModal(true)}
-              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-medium shadow-lg flex items-center gap-2 transition-all duration-200"
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-4 py-2 md:px-6 md:py-3 rounded-xl font-medium shadow-lg flex items-center gap-2 transition-all duration-200 text-sm md:text-base"
             >
-              <FiPlus size={18} />
-              Add User
+              <FiPlus size={16} />
+              <span>Add User</span>
             </motion.button>
           </div>
         </motion.div>
@@ -185,9 +182,9 @@ const UserManagement = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-white rounded-xl shadow-md p-4 mb-6 border border-gray-100"
+          className="bg-white rounded-xl shadow-md p-3 md:p-4 mb-6 border border-gray-100"
         >
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
             <div className="flex-1 relative">
               <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input
@@ -195,7 +192,7 @@ const UserManagement = () => {
                 placeholder="Search users..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                className="w-full pl-10 pr-4 py-2 md:py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all text-sm md:text-base"
               />
             </div>
             <div className="relative">
@@ -203,7 +200,7 @@ const UserManagement = () => {
               <select
                 value={roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value)}
-                className="pl-10 pr-8 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all appearance-none cursor-pointer min-w-[140px]"
+                className="pl-10 pr-8 py-2 md:py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all appearance-none cursor-pointer w-full sm:w-auto text-sm md:text-base"
               >
                 <option value="all">All Roles</option>
                 <option value="admin">Admin</option>
@@ -222,18 +219,18 @@ const UserManagement = () => {
         >
           <div className="overflow-x-auto">
             <table className="min-w-full">
-              <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
+              <thead className="bg-gradient-to-r from-gray-50 to-gray-100 hidden sm:table-header-group">
                 <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                     User
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                     Role
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <th className="px-4 md:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                     Created
                   </th>
-                  <th className="px-6 py-4 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                  <th className="px-4 md:px-6 py-3 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -247,12 +244,71 @@ const UserManagement = () => {
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: 20 }}
                       transition={{ delay: index * 0.05 }}
-                      className="hover:bg-gray-50 transition-colors duration-200"
+                      className="hover:bg-gray-50 transition-colors duration-200 block sm:table-row"
                     >
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      {/* Mobile View */}
+                      <td className="px-4 py-3 block sm:hidden">
+                        <div className="flex flex-col gap-2">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div
+                                className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center ${
+                                  user.role === "admin" ? "bg-red-100" : "bg-indigo-100"
+                                }`}
+                              >
+                                <FiUser className={`${user.role === "admin" ? "text-red-600" : "text-indigo-600"}`} />
+                              </div>
+                              <div>
+                                <div className="text-sm font-semibold text-gray-900">{user.username}</div>
+                                <div className="text-xs text-gray-500">ID: {user._id.slice(-8)}</div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => handleEdit(user)}
+                                className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                                title="Edit user"
+                              >
+                                <FiEdit2 size={14} />
+                              </motion.button>
+                              <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => handleDelete(user._id)}
+                                className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                title="Delete user"
+                              >
+                                <FiTrash2 size={14} />
+                              </motion.button>
+                            </div>
+                          </div>
+                          <div className="mt-2 flex items-center justify-between">
+                            <span
+                              className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${
+                                user.role === "admin" ? "bg-red-100 text-red-800" : "bg-indigo-100 text-indigo-800"
+                              }`}
+                            >
+                              {user.role === "admin" ? <FiShield size={10} /> : <FiUser size={10} />}
+                              {user.role.toUpperCase()}
+                            </span>
+                            <span className="text-xs text-gray-600">
+                              {new Date(user.createdAt).toLocaleDateString("en-US", {
+                                year: "numeric",
+                                month: "short",
+                                day: "numeric",
+                              })}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Desktop View */}
+                      <td className="px-4 md:px-6 py-3 whitespace-nowrap hidden sm:table-cell">
                         <div className="flex items-center gap-3">
                           <div
-                            className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                            className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center ${
                               user.role === "admin" ? "bg-red-100" : "bg-indigo-100"
                             }`}
                           >
@@ -264,9 +320,9 @@ const UserManagement = () => {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 md:px-6 py-3 whitespace-nowrap hidden sm:table-cell">
                         <span
-                          className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${
+                          className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${
                             user.role === "admin" ? "bg-red-100 text-red-800" : "bg-indigo-100 text-indigo-800"
                           }`}
                         >
@@ -274,32 +330,32 @@ const UserManagement = () => {
                           {user.role.toUpperCase()}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      <td className="px-4 md:px-6 py-3 whitespace-nowrap text-sm text-gray-600 hidden sm:table-cell">
                         {new Date(user.createdAt).toLocaleDateString("en-US", {
                           year: "numeric",
                           month: "short",
                           day: "numeric",
                         })}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right">
+                      <td className="px-4 md:px-6 py-3 whitespace-nowrap text-right hidden sm:table-cell">
                         <div className="flex items-center justify-end gap-2">
                           <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => handleEdit(user)}
-                            className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                            className="p-1.5 md:p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
                             title="Edit user"
                           >
-                            <FiEdit2 size={16} />
+                            <FiEdit2 size={14} />
                           </motion.button>
                           <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => handleDelete(user._id)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            className="p-1.5 md:p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                             title="Delete user"
                           >
-                            <FiTrash2 size={16} />
+                            <FiTrash2 size={14} />
                           </motion.button>
                         </div>
                       </td>
@@ -311,12 +367,12 @@ const UserManagement = () => {
           </div>
 
           {filteredUsers.length === 0 && (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FiUsers className="text-gray-400 text-2xl" />
+            <div className="text-center py-8 md:py-12">
+              <div className="w-14 h-14 md:w-16 md:h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
+                <FiUsers className="text-gray-400 text-xl md:text-2xl" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-600 mb-2">No users found</h3>
-              <p className="text-gray-500">
+              <h3 className="text-base md:text-lg font-semibold text-gray-600 mb-1 md:mb-2">No users found</h3>
+              <p className="text-gray-500 text-sm md:text-base">
                 {searchTerm || roleFilter !== "all"
                   ? "Try adjusting your search or filter criteria"
                   : "Create your first user to get started"}
@@ -333,12 +389,12 @@ const UserManagement = () => {
                 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-auto overflow-hidden"
+                className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-auto overflow-hidden max-h-[90vh] overflow-y-auto"
               >
                 {/* Header */}
-                <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4">
+                <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-4 md:px-6 py-3 md:py-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                    <h3 className="text-lg md:text-xl font-bold text-white flex items-center gap-2">
                       <FiUser className="text-white/80" />
                       {editingUser ? "Edit User" : "Add User"}
                     </h3>
@@ -351,24 +407,24 @@ const UserManagement = () => {
                       }}
                       className="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/20 transition-colors"
                     >
-                      <FiX size={20} />
+                      <FiX size={18} />
                     </motion.button>
                   </div>
                 </div>
 
                 {/* Form */}
-                <form onSubmit={handleSubmit} className="p-6 space-y-5">
+                <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-4 md:space-y-5">
                   {/* Username */}
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-                      <FiUser className="text-indigo-500" size={16} />
+                      <FiUser className="text-indigo-500" size={14} />
                       Username
                     </label>
                     <input
                       type="text"
                       value={formData.username}
                       onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 hover:bg-gray-100"
+                      className="w-full px-3 md:px-4 py-2 md:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 hover:bg-gray-100 text-sm md:text-base"
                       placeholder="Enter username..."
                       required
                     />
@@ -377,7 +433,7 @@ const UserManagement = () => {
                   {/* Password */}
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-                      <FiLock className="text-indigo-500" size={16} />
+                      <FiLock className="text-indigo-500" size={14} />
                       Password{" "}
                       {editingUser && <span className="text-xs text-gray-500">(leave blank to keep current)</span>}
                     </label>
@@ -385,7 +441,7 @@ const UserManagement = () => {
                       type="password"
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 hover:bg-gray-100"
+                      className="w-full px-3 md:px-4 py-2 md:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 hover:bg-gray-100 text-sm md:text-base"
                       placeholder={editingUser ? "Leave blank to keep current" : "Enter password..."}
                       required={!editingUser}
                     />
@@ -394,13 +450,13 @@ const UserManagement = () => {
                   {/* Role */}
                   <div className="space-y-2">
                     <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-                      <FiShield className="text-indigo-500" size={16} />
+                      <FiShield className="text-indigo-500" size={14} />
                       Role
                     </label>
                     <select
                       value={formData.role}
                       onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 hover:bg-gray-100 appearance-none cursor-pointer"
+                      className="w-full px-3 md:px-4 py-2 md:py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 hover:bg-gray-100 appearance-none cursor-pointer text-sm md:text-base"
                     >
                       <option value="user">👤 User</option>
                       <option value="admin">🛡️ Admin</option>
@@ -408,7 +464,7 @@ const UserManagement = () => {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex gap-3 pt-4">
+                  <div className="flex gap-2 md:gap-3 pt-3 md:pt-4">
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
@@ -417,7 +473,7 @@ const UserManagement = () => {
                         setShowModal(false)
                         resetForm()
                       }}
-                      className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-colors duration-200"
+                      className="flex-1 px-3 md:px-4 py-2 md:py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-colors duration-200 text-sm md:text-base"
                     >
                       Cancel
                     </motion.button>
@@ -425,9 +481,9 @@ const UserManagement = () => {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       type="submit"
-                      className="flex-1 px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+                      className="flex-1 px-3 md:px-4 py-2 md:py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-2 text-sm md:text-base"
                     >
-                      <FiSave size={16} />
+                      <FiSave size={14} />
                       {editingUser ? "Update" : "Create"}
                     </motion.button>
                   </div>

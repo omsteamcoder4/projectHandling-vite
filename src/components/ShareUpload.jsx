@@ -275,7 +275,7 @@ const ShareUpload = () => {
     const now = new Date()
     const diffTime = Math.abs(now - upload)
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    return Math.max(0, 7 - diffDays)
+    return Math.max(0, 30 - diffDays)
   }
 
   const groupFilesBySession = () => {

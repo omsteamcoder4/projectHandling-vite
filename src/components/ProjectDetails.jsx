@@ -357,7 +357,7 @@ const ProjectDetails = ({
                         ? "Please wait while files are being uploaded"
                         : isDragging
                           ? "Release to upload your files"
-                          : "Click here or drag and drop files to upload"}
+                          : ""}
                     </p>
                   </div>
                 </div>

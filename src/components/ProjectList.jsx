@@ -177,62 +177,66 @@ const ProjectList = ({
                         </button>
 
                         {showActionMenu === project._id && (
-                          <div className="absolute right-10 top-0 z-50">
-                            <div className="relative">
+                          <div className="absolute right-15 top-5 z-50 bg-white p-3 rounded-md shadow-lg border border-gray-200">
+                            <div className="flex gap-2">
+                              {/* Info Button */}
                               <button
                                 onClick={(e) => {
-                                  e.stopPropagation()
-                                  onInfo(project)
-                                  setShowActionMenu(null)
+                                  e.stopPropagation();
+                                  onInfo(project);
+                                  setShowActionMenu(null);
                                 }}
-                                className="absolute right-0 top-0 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-200 transform hover:scale-105 animate-fade-in"
-                                style={{ animationDelay: '0ms' }}
+                                className="opacity-0 translate-x-4 animate-slide-in mr-4"
+                                style={{ animationDelay: "0ms" }}
                               >
                                 <FiInfo className="text-gray-500" size={16} />
                               </button>
 
+                              {/* Edit Button (if permitted) */}
                               {canEdit && (
                                 <button
                                   onClick={(e) => {
-                                    e.stopPropagation()
-                                    onEdit(project)
-                                    setShowActionMenu(null)
+                                    e.stopPropagation();
+                                    onEdit(project);
+                                    setShowActionMenu(null);
                                   }}
-                                  className="absolute right-5 top-5 px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 rounded-lg transition-all duration-200 transform hover:scale-105 animate-fade-in"
-                                  style={{ animationDelay: '100ms' }}
+                                  className="opacity-0 translate-x-4 animate-slide-in mr-4"
+                                  style={{ animationDelay: "100ms" }}
                                 >
                                   <FiEdit2 className="text-blue-500" size={16} />
                                 </button>
                               )}
 
+                              {/* Share Button (if permitted) */}
                               {canShare && (
                                 <button
                                   onClick={(e) => {
-                                    e.stopPropagation()
-                                    onShare(project._id)
-                                    setShowActionMenu(null)
+                                    e.stopPropagation();
+                                    onShare(project._id);
+                                    setShowActionMenu(null);
                                   }}
                                   disabled={shareLoading}
-                                  className="absolute right-0 top-15 px-4 py-2 text-sm text-gray-700 hover:bg-green-50 rounded-lg transition-all duration-200 transform hover:scale-105 animate-fade-in disabled:opacity-50"
-                                  style={{ animationDelay: '200ms' }}
+                                  className="opacity-0 translate-x-4 animate-slide-in mr-4"
+                                  style={{ animationDelay: "200ms" }}
                                 >
                                   {shareLoading ? (
-                                    <span className="animate-pulse text-gray-400">Generating link...</span>
+                                    <span className="animate-pulse text-xs text-gray-400">...</span>
                                   ) : (
                                     <FiShare2 className="text-green-500" size={16} />
                                   )}
                                 </button>
                               )}
 
+                              {/* Delete Button (if permitted) */}
                               {canDelete && (
                                 <button
                                   onClick={(e) => {
-                                    e.stopPropagation()
-                                    onDelete(project._id)
-                                    setShowActionMenu(null)
+                                    e.stopPropagation();
+                                    onDelete(project._id);
+                                    setShowActionMenu(null);
                                   }}
-                                  className="absolute right-5 top-10 px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 transform hover:scale-105 animate-fade-in"
-                                  style={{ animationDelay: '300ms' }}
+                                  className="opacity-0 translate-x-4 animate-slide-in mr-4"
+                                  style={{ animationDelay: "300ms" }}
                                 >
                                   <FiTrash2 className="text-red-500" size={16} />
                                 </button>
